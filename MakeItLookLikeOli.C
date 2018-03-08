@@ -24,6 +24,7 @@ void MakeItLookLikeOli(const char *fileName) {
           } else {
             TString SEName=Form("SEDist_Particle%i_Particle%i",iPart1,iPart2);
             SEDist[iPart1][iPart2]=(TH1F*)tmpFolder->FindObject(SEName.Data());
+            SEDist[iPart1][iPart2]->SetDirectory(0);
             if (!SEDist[iPart1][iPart2]) {
               std::cout << SEName.Data() << " not Found\n";
               std::cout << SEName.Data() << " not Found\n";
@@ -34,6 +35,7 @@ void MakeItLookLikeOli(const char *fileName) {
 
             TString MEName=Form("MEDist_Particle%i_Particle%i",iPart1,iPart2);
             MEDist[iPart1][iPart2]=(TH1F*)tmpFolder->FindObject(MEName.Data());
+            MEDist[iPart1][iPart2]->SetDirectory(0);
             if (!MEDist[iPart1][iPart2]) {
               std::cout << SEName.Data() << " not Found\n";
               std::cout << SEName.Data() << " not Found\n";
@@ -47,9 +49,11 @@ void MakeItLookLikeOli(const char *fileName) {
     }
   }
   TFile *output=new TFile("Renamed.root","RECREATE");
-  TDirectoryFile *dirOutput=new TDirectoryFile("PWGCF_PLFemto_0","PWGCF_PLFemto_0");
-  dirOutput->cd();
+  TDirectoryFile* dirOutput=new TDirectoryFile("PWGCF_PLFemto_0","PWGCF_PLFemto_0");
+//  TList* dirOutput=new TList();
+//  dirOutput->SetName("PWGCF_PLFemto_0");
+//  dirOutput->SetOwner();
   dirOutput->Add(TPdir);
-  output->Write();
-//  output->Close();
+  dirOutput->Write("PWGCF_PLFemto_0",TObject::kSingleKey);
+//  TPdir->Write("TPdir_0");
 }
