@@ -1,11 +1,197 @@
 void MakeItLookLikeOli(const char *fileName) {
   TList *TPdir=new TList();
-//  TPdir->SetOwner();
   TPdir->SetName("TPdir_0");
+  TList *PIDdir=new TList();
+  PIDdir->SetName("PIDdir_0");
+  TList *AliEventCuts;
+  TList *SPdir=new TList();
+  SPdir->SetName("SPdir_0");
+
   TString RelKNames[6]={"Proton","AntiProton","Lambda","AntiLambda","Xi","AntiXi"};
   TH1F* SEDist[6][6];
   TH1F* MEDist[6][6];
   TFile *file=TFile::Open(fileName);
+
+  TDirectoryFile *dirQA=(TDirectoryFile*)(file->FindObjectAny("QA"));
+  if (dirQA) {
+    TList *tmp=dirQA->GetListOfKeys();
+    TString name=tmp->At(0)->GetName();
+    TList *QA;
+    dirQA->GetObject(name,QA);
+    if (QA) {
+      AliEventCuts=(TList*)(QA->FindObject("AliEventCuts"));
+      AliEventCuts->SetName("AliEventCuts_0");
+      if (!AliEventCuts) {
+        std::cout << "No Event Cuts \n";
+      }
+      TString v0TSharedName[4]={"fNV0protonSharedTracks","fNAntiV0AntiprotonSharedTracks","fNXiSharedTracks","fNAntiXiAntiprotonSharedTracks"};
+      TString v0v0SharedName[4]={"fNV0TrackSharing","fNAntiV0TrackSharing","fNXiTrackSharing","fNAntiXiTrackSharing"};
+
+      TList *PairCleaner = (TList*)QA->FindObject("PairCleaner");
+      if (PairCleaner) {
+        for (int i=0; i<4;++i) {
+          TH1F* DaugTrack=(TH1F*)PairCleaner->FindObject(Form("DaugthersSharedTracks_%i",i));
+          DaugTrack->SetName(v0TSharedName[i].Data());
+          SPdir->Add(DaugTrack);
+          TH1F* DaugDaug=(TH1F*)PairCleaner->FindObject(Form("DaugthersSharedDaughters_%i",i));
+          DaugDaug->SetName(v0v0SharedName[i].Data());
+          SPdir->Add(DaugDaug);
+        }
+      } else {
+        std::cout << "No Pair Cleaner \n";
+      }
+    } else {
+      std::cout << "No QA List \n";
+    }
+  } else {
+    std::cout << "No Dir QA!\n";
+  }
+  TDirectoryFile *dirEvent=(TDirectoryFile*)(file->FindObjectAny("EvtCuts"));
+  if (dirEvent) {
+    TList *tmp=dirEvent->GetListOfKeys();
+    TString name=tmp->At(0)->GetName();
+    TList *EvtCuts;
+    dirEvent->GetObject(name,EvtCuts);
+    if (EvtCuts) {
+      TList *after = (TList*)EvtCuts->FindObject("after");
+      if (after) {
+        TH1F* MultSPD=(TH1F*)after->FindObject("MultiplicitySPD_after");
+        MultSPD->SetName("fNTracklets");
+        SPdir->Add(MultSPD);
+      } else {
+        std::cout << "No Evt Cuts After \n";
+      }
+    } else {
+      std::cout << "No Evt Cuts \n";
+    }
+  }
+  TDirectoryFile *dirProtonCuts=(TDirectoryFile*)(file->FindObjectAny("TrackCuts"));
+  if (dirProtonCuts) {
+    TList *tmp=dirProtonCuts->GetListOfKeys();
+    TString name=tmp->At(0)->GetName();
+    TList *TrackCuts;
+    dirProtonCuts->GetObject(name,TrackCuts);
+    if (TrackCuts) {
+      TH2F *dcaXYProton=(TH2F*)TrackCuts->FindObject("DCAXYPtBinningTot");
+      TH1F *projDCAXY=(TH1F*)dcaXYProton->ProjectionY("fProtonDCAxy");
+      SPdir->Add(projDCAXY);
+      TList *after=(TList*)TrackCuts->FindObject("after");
+      if (after) {
+        TH2F *AfterDCAXY=(TH2F*)after->FindObject("DCAXY_after");
+        TH1F *DCAXY1D=(TH1F*)AfterDCAXY->ProjectionY("fProtonDCAxyCutz");
+        SPdir->Add(DCAXY1D);
+
+        TH1F *AfterPt=(TH1F*)after->FindObject("pTDist_after");
+        AfterPt->SetName("fProtonPt");
+        SPdir->Add(AfterPt);
+
+        TH1F *AfterPhi=(TH1F*)after->FindObject("phiDist_after");
+        AfterPhi->SetName("fProtonPhi");
+        SPdir->Add(AfterPhi);
+
+        TH1F *AfterEta=(TH1F*)after->FindObject("EtaDist_after");
+        AfterEta->SetName("fProtonEta");
+        SPdir->Add(AfterEta);
+
+        TH1F *AfterSigmaTPC=(TH1F*)after->FindObject("NSigTPC_after");
+        AfterSigmaTPC->SetName("fProtonNSigmaTPC");
+        PIDdir->Add(AfterSigmaTPC);
+
+        TH1F *AfterSigmaTOF=(TH1F*)after->FindObject("NSigTOF_after");
+        AfterSigmaTOF->SetName("fProtonNSigmaCombined");
+        PIDdir->Add(AfterSigmaTOF);
+
+      } else {
+        std::cout << "No After Track Cuts \n";
+      }
+    } else {
+      std::cout << "No Track Cuts \n";
+    }
+  } else {
+    std::cout << "No Proton Cuts \n";
+  }
+
+  TDirectoryFile *dirv0Cuts=(TDirectoryFile*)(file->FindObjectAny("v0Cuts"));
+  if (dirv0Cuts) {
+    TList *tmp=dirv0Cuts->GetListOfKeys();
+    TString name=tmp->At(0)->GetName();
+    TList *v0CutList;
+    dirv0Cuts->GetObject(name,v0CutList);
+    if (v0CutList) {
+      TList *v0Cuts = (TList*)v0CutList->FindObject("v0Cuts");
+      if (v0Cuts) {
+        TH1F *AfterInvMassLambda=(TH1F*)v0Cuts->FindObject("InvMasswithCuts");
+        AfterInvMassLambda->SetName("fInvMassLambdawCuts");
+        SPdir->Add(AfterInvMassLambda);
+
+        TH1F *InvMassKaon=(TH1F*)v0Cuts->FindObject("InvMassKaon");
+        InvMassKaon->SetName("fInvMassMissIDK0s");
+        SPdir->Add(InvMassKaon);
+
+        TH1F *fakeRejKaon= new TH1F("fInvMassMissIDK0swCuts","fInvMassMissIDK0swCuts",
+                                    InvMassKaon->GetNbinsX(),
+                                    InvMassKaon->GetXaxis()->GetBinCenter(1),
+                                    InvMassKaon->GetXaxis()->GetBinCenter(InvMassKaon->GetNbinsX()));
+
+        SPdir->Add(fakeRejKaon);
+
+        TList *after=(TList*)v0Cuts->FindObject("after");
+        if (after) {
+          TH1F *AfterPt=(TH1F*)after->FindObject("pTDist_after");
+          AfterPt->SetName("fLambdaPt");
+          SPdir->Add(AfterPt);
+
+          TH1F *AfterPhi=(TH1F*)after->FindObject("PhiDist_after");
+          AfterPhi->SetName("fLambdaPhi");
+          SPdir->Add(AfterPhi);
+
+          TH1F *AfterEta=(TH1F*)after->FindObject("EtaDist_after");
+          AfterEta->SetName("fLambdaEta");
+          SPdir->Add(AfterEta);
+
+          TH1F *AfterDCADaughterTracks=(TH1F*)after->FindObject("DCADauToVtx_after");
+          AfterDCADaughterTracks->SetName("fLambdaDCADaughterTracks");
+          SPdir->Add(AfterDCADaughterTracks);
+
+          TH1F *AfterPDaugPrimVtx=(TH1F*)after->FindObject("DCADauPToPV_after");
+          AfterPDaugPrimVtx->SetName("fLambdaDCAPosdaughPrimVertex");
+          SPdir->Add(AfterPDaugPrimVtx);
+
+          TH1F *AfterNDaugPrimVtx=(TH1F*)after->FindObject("DCADauNToPV_after");
+          AfterNDaugPrimVtx->SetName("fLambdaDCANegdaughPrimVertex");
+          SPdir->Add(AfterNDaugPrimVtx);
+
+          TH1F *AfterTransRadius=(TH1F*)after->FindObject("TransverseRadius_after");
+          AfterTransRadius->SetName("fLambdaTransverseRadius");
+          SPdir->Add(AfterTransRadius);
+
+        } else {
+          std::cout << "No After v0 Cuts \n";
+        }
+      } else {
+        std::cout << "No v0 Cuts \n";
+      }
+    } else {
+      std::cout << "No v0 Cut List \n";
+    }
+  }
+
+  TDirectoryFile *dirAntiv0Cuts=(TDirectoryFile*)(file->FindObjectAny("Antiv0Cuts"));
+  if (dirAntiv0Cuts) {
+    TList *tmp=dirAntiv0Cuts->GetListOfKeys();
+    TString name=tmp->At(0)->GetName();
+    TList *Antiv0CutList;
+    dirAntiv0Cuts->GetObject(name,Antiv0CutList);
+    if (Antiv0CutList) {
+      TList *Antiv0Cuts=(TList*)Antiv0CutList->FindObject("v0Cuts");
+      if (Antiv0Cuts) {
+        TH1F *AfterInvMassAntiLambda=(TH1F*)Antiv0Cuts->FindObject("InvMasswithCuts");
+        AfterInvMassAntiLambda->SetName("fInvMassAntiLambdawCuts");
+        SPdir->Add(AfterInvMassAntiLambda);
+      }
+    }
+  }
+
   TDirectoryFile *dirResults=(TDirectoryFile*)(file->FindObjectAny("Results"));
   if (dirResults) {
     TList *tmp=dirResults->GetListOfKeys();
@@ -50,10 +236,9 @@ void MakeItLookLikeOli(const char *fileName) {
   }
   TFile *output=new TFile("Renamed.root","RECREATE");
   TDirectoryFile* dirOutput=new TDirectoryFile("PWGCF_PLFemto_0","PWGCF_PLFemto_0");
-//  TList* dirOutput=new TList();
-//  dirOutput->SetName("PWGCF_PLFemto_0");
-//  dirOutput->SetOwner();
   dirOutput->Add(TPdir);
+  dirOutput->Add(PIDdir);
+  dirOutput->Add(AliEventCuts);
+  dirOutput->Add(SPdir);
   dirOutput->Write("PWGCF_PLFemto_0",TObject::kSingleKey);
-//  TPdir->Write("TPdir_0");
 }
