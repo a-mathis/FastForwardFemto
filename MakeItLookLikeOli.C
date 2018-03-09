@@ -75,6 +75,15 @@ void MakeItLookLikeOli(const char *fileName) {
       TH2F *dcaXYProton=(TH2F*)TrackCuts->FindObject("DCAXYPtBinningTot");
       TH1F *projDCAXY=(TH1F*)dcaXYProton->ProjectionY("fProtonDCAxy");
       SPdir->Add(projDCAXY);
+      //we need to trick this into a TH2F* for every pt bin
+      for (int i =0; i<20;++i) {
+        TString DCAXYOliHistName=Form("fProtonDCAxyDCAzPt%i",i);
+        TH2F *outputHist=new TH2F(DCAXYOliHistName.Data(),DCAXYOliHistName.Data(),500,-5,5,500,-5,5);
+        for (int iBin=1;iBin<=500;++iBin) {
+          outputHist->SetBinContent(iBin,outputHist->GetYaxis()->FindBin(0.),dcaXYProton->GetBinContent(i+1,iBin));
+          SPdir->Add(outputHist);
+        }
+      }
       TList *after=(TList*)TrackCuts->FindObject("after");
       if (after) {
         TH2F *AfterDCAXY=(TH2F*)after->FindObject("DCAXY_after");
@@ -135,6 +144,10 @@ void MakeItLookLikeOli(const char *fileName) {
 
         SPdir->Add(fakeRejKaon);
 
+        TH2F* CPALamDataTot=(TH2F*)v0Cuts->FindObject("CPAPtBinsTot");
+        for (int i=0;i<CPALamDataTot->GetXaxis()->GetNbins();++i) {
+          SPdir->Add(CPALamDataTot->ProjectionY(Form("fLambdaCPAPtBin%i",i),i+1,i+2));
+        }
         TList *after=(TList*)v0Cuts->FindObject("after");
         if (after) {
           TH1F *AfterPt=(TH1F*)after->FindObject("pTDist_after");
@@ -241,4 +254,61 @@ void MakeItLookLikeOli(const char *fileName) {
   dirOutput->Add(AliEventCuts);
   dirOutput->Add(SPdir);
   dirOutput->Write("PWGCF_PLFemto_0",TObject::kSingleKey);
+
+
+  //for the systematics:
+
+  for (int i=1;i<30;++i) {
+    TString dirName=Form("PWGCF_PLFemto_%i",i);
+    TDirectoryFile* sysdirOutput=new TDirectoryFile(dirName.Data(),dirName.Data());
+
+    TList *sysTPList=new TList();
+    sysTPList->SetName(Form("TPdir_%i",i));
+    TString resultsName=Form("Results_%i",i);
+    TDirectoryFile *sysdirResults=(TDirectoryFile*)(file->FindObjectAny(resultsName.Data()));
+    if (sysdirResults) {
+      TList *tmp=sysdirResults->GetListOfKeys();
+      TString name=tmp->At(0)->GetName();
+      TList *Results;
+      sysdirResults->GetObject(name,Results);
+      if (!Results) {
+        std::cout << "No Results \n";
+      } else {
+        for (int iPart1=0;iPart1<6;++iPart1) {
+          for (int iPart2=iPart1;iPart2<6;++iPart2) {
+            TString folderName=Form("Particle%i_Particle%i",iPart1,iPart2);
+            TList* tmpFolder=(TList*)Results->FindObject(folderName.Data());
+            if (!tmpFolder) {
+              std::cout << folderName.Data() <<" not Found\n";
+            } else {
+              TString SEName=Form("SEDist_Particle%i_Particle%i",iPart1,iPart2);
+              SEDist[iPart1][iPart2]=(TH1F*)tmpFolder->FindObject(SEName.Data());
+              SEDist[iPart1][iPart2]->SetDirectory(0);
+              if (!SEDist[iPart1][iPart2]) {
+                std::cout << SEName.Data() << " not Found\n";
+                std::cout << SEName.Data() << " not Found\n";
+              }
+              TString NewSEName=Form("f%s%sRelK",RelKNames[iPart1].Data(),RelKNames[iPart2].Data());
+              SEDist[iPart1][iPart2]->SetNameTitle(NewSEName.Data(),NewSEName.Data());
+              sysTPList->Add(SEDist[iPart1][iPart2]);
+
+              TString MEName=Form("MEDist_Particle%i_Particle%i",iPart1,iPart2);
+              MEDist[iPart1][iPart2]=(TH1F*)tmpFolder->FindObject(MEName.Data());
+              MEDist[iPart1][iPart2]->SetDirectory(0);
+              if (!MEDist[iPart1][iPart2]) {
+                std::cout << SEName.Data() << " not Found\n";
+                std::cout << SEName.Data() << " not Found\n";
+              }
+              TString NewMEName=Form("f%s%sRelKME",RelKNames[iPart1].Data(),RelKNames[iPart2].Data());
+              MEDist[iPart1][iPart2]->SetNameTitle(NewMEName.Data(),NewMEName.Data());
+              sysTPList->Add(MEDist[iPart1][iPart2]);
+            }
+          }
+        }
+      }
+    }
+    sysdirOutput->Add(sysTPList);
+    sysdirOutput->Write("PWGCF_PLFemto_0",TObject::kSingleKey);
+  }
+
 }
