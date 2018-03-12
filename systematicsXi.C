@@ -460,7 +460,7 @@ int systematicsXi(const char* file,const char *output="systematics_output")
   TH1F *hSystLL = new TH1F("hSystLL", "", 150, 0, 3);
 
   TH1F *hSystErrorPP = new TH1F("hSystErrorPP", "", 750, 0, 3);
-  TH1F *hSystErrorPL = new TH1F("hSystErrorPL", "", 150, 0, 3);
+  TH1F *hSystErrorPL = new TH1F("hSystErrorPXi", "", 150, 0, 3);
   TH1F *hSystErrorLL = new TH1F("hSystErrorLL", "", 150, 0, 3);
 
 

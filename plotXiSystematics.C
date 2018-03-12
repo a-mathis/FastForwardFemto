@@ -14,7 +14,24 @@
 std::vector<int> fFillColors = {kGray+1, kRed-10, kBlue-9, kGreen-8, kMagenta-9, kOrange-9, kCyan-8, kYellow-7};
 std::vector<int> fColors     = {kBlack, kRed+1 , kBlue+2, kGreen+3, kMagenta+1, kOrange-1, kCyan+2, kYellow+2};
 std::vector<int> fMarkers    = {kFullCircle, kFullSquare, kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross, kFullCross, kFullDiamond, kFullStar, kOpenStar};
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+TGraphErrors *DrawSystematicError(TH1F* histexp,TH1F *histerr,double errorwidth)
+{
+  //Input are the experimental histogram with statistical errors only and a histogram containing the errors
 
+  const int histbins = histexp->GetNbinsX();
+
+  TGraphErrors *ge_SysError_C2 = new TGraphErrors();
+
+  for(int i=0;i<histbins;i++)
+  {
+    if(histexp->GetBinCenter(i+1) > 0.2) continue;
+    ge_SysError_C2->SetPoint(i, histexp->GetBinCenter(i+1), histexp->GetBinContent(i+1));
+    ge_SysError_C2->SetPointError(i, errorwidth, histerr->GetBinContent(i+1));
+  }
+
+  return ge_SysError_C2;
+}
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SetStyle(bool graypalette=false, bool title=false)
 {
@@ -137,7 +154,7 @@ TH1F* add_CF(TH1F* hist_CF1, TH1F* hist_CF2,TString HistName)
   return hist_CF_sum;
 }
 
-void plotXiSystematics(const char *expfile) {
+void plotXiSystematics(const char *expfile,const char *sysErr="") {
   // EXP DATA
 
   // Mixed event normalisation
@@ -145,13 +162,16 @@ void plotXiSystematics(const char *expfile) {
   const float normright = 0.4;
 
   TFile* _file0=TFile::Open(expfile);
-  //  TCanvas *XiCanvas=new TCanvas("XiCan","XiCan",0,0,1500,1100);
-  //  XiCanvas->Divide(1,2);
-  //  XiCanvas->cd(1);
-  //  hist_CF_pXi_ApAXi_exp[0]->DrawCopy();
-  //  hist_CF_pXi_ApAXi_exp[1]->DrawCopy("SAME");
-  //  XiCanvas->cd(2);
-  //  hist_CF_pXi_ApAXi_exp[2]->DrawCopy();
+  TString SysErrFile=Form("%s",sysErr);
+  TH1F *systErrXi;
+  if (SysErrFile!="") {
+    TFile* _file1=TFile::Open(SysErrFile.Data());
+    systErrXi=(TH1F*)_file1->FindObjectAny("C2totalsysPXi");
+//    _file1->ls();
+    if (!systErrXi) {
+      std::cout << "C2totalsysPXi not found! \n";
+    }
+  }
   TFile *errFile=new TFile("RelErr.root","RECREATE");
 //  _file0->ls();
   int iVar=0;
@@ -159,6 +179,7 @@ void plotXiSystematics(const char *expfile) {
   TCanvas *relErr = new TCanvas("relErr","relErr",0,0,1500,1100);
   TCanvas *XiCorr= new TCanvas("XiCorr","XiCorr",0,0,1500,1100);
   XiCorr->Divide(2,1);
+  TCanvas *XiCorrFinal= new TCanvas("XiCorrFinal","XiCorrFinal",0,0,1500,1100);
   for (int i = 0; i<=30;++i) {
     if (i==0||i>17) {
       TString inputDirName=Form("PWGCF_PLFemto_%i",i);
@@ -205,6 +226,27 @@ void plotXiSystematics(const char *expfile) {
             hist_CF_pXi_ApAXi_exp[1]->DrawCopy("SAME");
             XiCorr->cd(2);
             hist_CF_pXi_ApAXi_exp[2]->DrawCopy();
+            if (systErrXi) {
+              XiCorrFinal->cd();
+              TF1 *baselinepXi = new TF1("baselinepXi", "pol1", 0, 1);
+              baselinepXi->SetParameter(0, 1.);
+              baselinepXi->SetParameter(1, 0);
+              baselinepXi->SetLineStyle(2);
+              baselinepXi->SetLineColor(fFillColors[6]);
+
+              TGraphErrors *Tgraph_syserror_pXi_ApAXi = DrawSystematicError(hist_CF_pXi_ApAXi_exp[2], systErrXi, 0.01);
+              Tgraph_syserror_pXi_ApAXi->SetLineColor(kWhite);
+              Tgraph_syserror_pXi_ApAXi->Draw("ap");
+              Tgraph_syserror_pXi_ApAXi->SetTitle("; k* (GeV/#it{c}); #it{C}(k*)");
+              Tgraph_syserror_pXi_ApAXi->GetXaxis()->SetRangeUser(0, 0.2);
+              Tgraph_syserror_pXi_ApAXi->GetXaxis()->SetNdivisions(505);
+              Tgraph_syserror_pXi_ApAXi->GetYaxis()->SetRangeUser(0.25, 10);
+              Tgraph_syserror_pXi_ApAXi->SetFillColorAlpha(kBlack, 0.4);
+              Tgraph_syserror_pXi_ApAXi->Draw("2 same");
+              baselinepXi->Draw("same");
+              hist_CF_pXi_ApAXi_exp[2]->Draw("pe same");
+              XiCorrFinal->SaveAs("Finalp_Xi.pdf");
+            }
           }
 
 

@@ -18,68 +18,68 @@ std::vector<int> fMarkers    = {kFullCircle, kFullSquare, kOpenCircle, kOpenSqua
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SetStyle(bool graypalette=false, bool title=false)
 {
-const int NCont = 255;
-gStyle->Reset("Plain");
-gStyle->SetNumberContours(NCont);
-gStyle->SetOptTitle(title);
-gStyle->SetTitleBorderSize(0);
-gStyle->SetOptStat(0);
-if(graypalette) gStyle->SetPalette(8,0);
-else gStyle->SetPalette(1);
-gStyle->SetCanvasColor(10);
-gStyle->SetCanvasBorderMode(0);
-gStyle->SetFrameLineWidth(1);
-gStyle->SetFrameFillColor(kWhite);
-gStyle->SetPadColor(10);
-gStyle->SetPadTickX(1);
-gStyle->SetPadTickY(1);
-gStyle->SetPadBottomMargin(0.15);
-gStyle->SetPadLeftMargin(0.15);
-gStyle->SetHistLineWidth(1);
-gStyle->SetHistLineColor(kRed);
-gStyle->SetFuncWidth(2);
-gStyle->SetFuncColor(kGreen);
-gStyle->SetLineWidth(2);
-gStyle->SetLabelSize(0.045,"xyz");
-gStyle->SetLabelOffset(0.01,"y");
-gStyle->SetLabelOffset(0.01,"x");
-gStyle->SetLabelColor(kBlack,"xyz");
-gStyle->SetTitleSize(0.05,"xyz");
-gStyle->SetTitleOffset(1.25,"y");
-gStyle->SetTitleOffset(1.2,"x");
-gStyle->SetTitleFillColor(kWhite);
-gStyle->SetTextSizePixels(26);
-gStyle->SetTextFont(42);
-gStyle->SetLegendBorderSize(0);
-gStyle->SetLegendFillColor(kWhite);
-gStyle->SetLegendFont(42);
-gStyle->SetLegendBorderSize(0);
+  const int NCont = 255;
+  gStyle->Reset("Plain");
+  gStyle->SetNumberContours(NCont);
+  gStyle->SetOptTitle(title);
+  gStyle->SetTitleBorderSize(0);
+  gStyle->SetOptStat(0);
+  if(graypalette) gStyle->SetPalette(8,0);
+  else gStyle->SetPalette(1);
+  gStyle->SetCanvasColor(10);
+  gStyle->SetCanvasBorderMode(0);
+  gStyle->SetFrameLineWidth(1);
+  gStyle->SetFrameFillColor(kWhite);
+  gStyle->SetPadColor(10);
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
+  gStyle->SetPadBottomMargin(0.15);
+  gStyle->SetPadLeftMargin(0.15);
+  gStyle->SetHistLineWidth(1);
+  gStyle->SetHistLineColor(kRed);
+  gStyle->SetFuncWidth(2);
+  gStyle->SetFuncColor(kGreen);
+  gStyle->SetLineWidth(2);
+  gStyle->SetLabelSize(0.045,"xyz");
+  gStyle->SetLabelOffset(0.01,"y");
+  gStyle->SetLabelOffset(0.01,"x");
+  gStyle->SetLabelColor(kBlack,"xyz");
+  gStyle->SetTitleSize(0.05,"xyz");
+  gStyle->SetTitleOffset(1.25,"y");
+  gStyle->SetTitleOffset(1.2,"x");
+  gStyle->SetTitleFillColor(kWhite);
+  gStyle->SetTextSizePixels(26);
+  gStyle->SetTextFont(42);
+  gStyle->SetLegendBorderSize(0);
+  gStyle->SetLegendFillColor(kWhite);
+  gStyle->SetLegendFont(42);
+  gStyle->SetLegendBorderSize(0);
 
-const int NRGBs = 6;
-Double_t stops[NRGBs];
-for(int i=0; i<NRGBs; ++i) stops[i] = float(i)/(NRGBs-1);
+  const int NRGBs = 6;
+  Double_t stops[NRGBs];
+  for(int i=0; i<NRGBs; ++i) stops[i] = float(i)/(NRGBs-1);
 
-Double_t red[NRGBs]   = { 1.,  29./255., 25./255., 27./255., 32./255., 24./255.};
-Double_t green[NRGBs] = { 1., 221./255., 160./255., 113./255., 74./255., 37./255.};
-Double_t blue[NRGBs] = {  1., 221./255., 184./255., 154./255., 129./255., 98./255.};
-TColor::CreateGradientColorTable(NRGBs,stops,red,green,blue,NCont);
+  Double_t red[NRGBs]   = { 1.,  29./255., 25./255., 27./255., 32./255., 24./255.};
+  Double_t green[NRGBs] = { 1., 221./255., 160./255., 113./255., 74./255., 37./255.};
+  Double_t blue[NRGBs] = {  1., 221./255., 184./255., 154./255., 129./255., 98./255.};
+  TColor::CreateGradientColorTable(NRGBs,stops,red,green,blue,NCont);
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SetStyleHisto(TH1 *histo, int marker, int color)
 {
-histo->GetXaxis()->SetLabelSize(0.045);
-histo->GetXaxis()->SetTitleSize(0.05);
-histo->GetXaxis()->SetLabelOffset(0.01);
-histo->GetXaxis()->SetTitleOffset(1.2);
-histo->GetXaxis()->SetLabelFont(42);
-histo->GetYaxis()->SetLabelSize(0.045);
-histo->GetYaxis()->SetTitleSize(0.05);
-histo->GetYaxis()->SetLabelOffset(0.01);
-histo->GetYaxis()->SetTitleOffset(1.25);
-histo->SetMarkerStyle(fMarkers[marker]);
-histo->SetMarkerColor(fColors[color]);
-histo->SetLineColor(fColors[color]);
+  histo->GetXaxis()->SetLabelSize(0.045);
+  histo->GetXaxis()->SetTitleSize(0.05);
+  histo->GetXaxis()->SetLabelOffset(0.01);
+  histo->GetXaxis()->SetTitleOffset(1.2);
+  histo->GetXaxis()->SetLabelFont(42);
+  histo->GetYaxis()->SetLabelSize(0.045);
+  histo->GetYaxis()->SetTitleSize(0.05);
+  histo->GetYaxis()->SetLabelOffset(0.01);
+  histo->GetYaxis()->SetTitleOffset(1.25);
+  histo->SetMarkerStyle(fMarkers[marker]);
+  histo->SetMarkerColor(fColors[color]);
+  histo->SetLineColor(fColors[color]);
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -592,6 +592,68 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   Tgraph_syserror_LL_ALAL->Draw("2 same");
   hist_CF_LL_ALAL_exp[2]->Draw("pe same");
   hist_CF_LL_ALAL_sim[2]->Draw("pe same");
+
+  TF1 *baselinepXi = new TF1("baselinepXi", "pol1", 0, 1);
+  baselinepXi->SetParameter(0, 1.);
+  baselinepXi->SetParameter(1, 0);
+  baselinepXi->SetLineStyle(2);
+  baselinepXi->SetLineColor(fFillColors[6]);
+  TLatex RatioPP;
+  RatioPP.SetTextSize(gStyle->GetTextSize());
+  RatioPP.SetNDC(kTRUE);
+
+  TCanvas *Can_CF_RatioSimExp = new TCanvas("Can_CF_RatioSimExp","Can_CF_RatioSimExp",0,0,1500,1500);
+  Can_CF_RatioSimExp->Divide(3,2);
+
+//  TH1F* RatioSimData_CF_PP_APAP = (TH1F*)histME_relK_pp->Clone("RatioSimDataOP");
+//  RatioSimData_CF_PP_APAP->Divide(histME_relK_ppsim);
+  TH1F* RatioSimData_CF_PP_APAP = (TH1F*)hist_CF_pp_ApAp_exp[2]->Clone("RatioSimDataOP");
+  RatioSimData_CF_PP_APAP->Divide(hist_CF_pp_ApAp_sim[2]);
+  RatioSimData_CF_PP_APAP->SetTitle("; k* (GeV/#it{c}); #it{SE}(k*)_{Bernie}/#it{SE}(k*)_{Andi}");
+  RatioSimData_CF_PP_APAP->GetYaxis()->SetTitleOffset(1.4);
+  Can_CF_RatioSimExp->cd(4);
+  RatioSimData_CF_PP_APAP->DrawCopy();
+  RatioSimData_CF_PP_APAP->GetXaxis()->SetRangeUser(0,0.3);
+  RatioPP.DrawLatex(0.5, 0.8, "pp #oplus #bar{pp}");
+  Can_CF_RatioSimExp->cd(1);
+  RatioSimData_CF_PP_APAP->DrawCopy();
+  baselinepXi->Draw("same");
+  RatioPP.DrawLatex(0.5, 0.8, "pp #oplus #bar{pp}");
+
+
+
+//  TH1F* RatioSimData_CF_PL_APAL = (TH1F*)histME_relK_Lp->Clone("RatioSimDataPL");
+//  RatioSimData_CF_PL_APAL->Divide(histME_relK_Lpsim);
+  TH1F* RatioSimData_CF_PL_APAL = (TH1F*)hist_CF_Lp_ALAp_exp[2]->Clone("RatioSimDataPL");
+  RatioSimData_CF_PL_APAL->Divide(hist_CF_Lp_ALAp_sim[2]);
+  RatioSimData_CF_PL_APAL->SetTitle("; k* (GeV/#it{c}); #it{SE}(k*)_{Bernie}/#it{SE}(k*)_{Andi}");
+  RatioSimData_CF_PL_APAL->GetYaxis()->SetTitleOffset(1.4);
+  Can_CF_RatioSimExp->cd(5);
+  RatioSimData_CF_PL_APAL->DrawCopy();
+  RatioPP.DrawLatex(0.5, 0.8, "p#Lambda #oplus #bar{p#Lambda}");
+  RatioSimData_CF_PL_APAL->GetXaxis()->SetRangeUser(0,0.3);
+  Can_CF_RatioSimExp->cd(2);
+  RatioSimData_CF_PL_APAL->DrawCopy("pe");
+  baselinepXi->Draw("same");
+  RatioPP.DrawLatex(0.5, 0.8, "p#Lambda #oplus #bar{p#Lambda}");
+
+//  TH1F* RatioSimData_CF_LL_ALAL = (TH1F*)histME_relK_LL->Clone("RatioSimDataLL");
+//  RatioSimData_CF_LL_ALAL->Divide(histME_relK_LLsim);
+  TH1F* RatioSimData_CF_LL_ALAL = (TH1F*)hist_CF_LL_ALAL_exp[2]->Clone("RatioSimDataLL");
+  RatioSimData_CF_LL_ALAL->Divide(hist_CF_LL_ALAL_sim[2]);
+  RatioSimData_CF_LL_ALAL->SetTitle("; k* (GeV/#it{c}); #it{SE}(k*)_{Bernie}/#it{SE}(k*)_{Andi}");
+  RatioSimData_CF_LL_ALAL->GetYaxis()->SetTitleOffset(1.4);
+  Can_CF_RatioSimExp->cd(6);
+  RatioSimData_CF_LL_ALAL->DrawCopy("pe");
+  RatioPP.DrawLatex(0.5, 0.8, "#Lambda#Lambda #oplus #bar{#Lambda#Lambda}");
+  RatioSimData_CF_LL_ALAL->GetXaxis()->SetRangeUser(0,0.3);
+  Can_CF_RatioSimExp->cd(3);
+  RatioSimData_CF_LL_ALAL->DrawCopy("pe");
+  baselinepXi->Draw("same");
+  RatioPP.DrawLatex(0.5, 0.8, "#Lambda#Lambda #oplus #bar{#Lambda#Lambda}");
+
+
+
 
   Can_CF_Pythia->Print("ANplot/CF_pythia.pdf");
 }

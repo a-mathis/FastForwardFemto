@@ -141,12 +141,14 @@ void FitLambda(TH1F* histo, float &signal, float
   fSignalGauss->SetParameter(0, 0.75 * histo->GetMaximum());
   fSignalGauss->SetParameter(1, fSignalSingleGauss->GetParameter(1));
   fSignalGauss->SetParameter(2, 2.f*fSignalSingleGauss->GetParameter(2));
+  fSignalGauss->SetParLimits(2, 0.5*fSignalSingleGauss->GetParameter(2),1e2*2.f*fSignalSingleGauss->GetParameter(2));
   fSignalGauss->SetParameter(3, 0.2 * histo->GetMaximum());
   fSignalGauss->SetParameter(4, fSignalSingleGauss->GetParameter(1));
   fSignalGauss->SetParLimits(4,
                              fSignalSingleGauss->GetParameter(1)-fSignalSingleGauss->GetParameter(2),
                              fSignalSingleGauss->GetParameter(1)+fSignalSingleGauss->GetParameter(2));
   fSignalGauss->SetParameter(5, 0.5*fSignalSingleGauss->GetParameter(2));
+  fSignalGauss->SetParLimits(5, 0.5*fSignalSingleGauss->GetParameter(2),1e2*2.f*fSignalSingleGauss->GetParameter(2));
   TFitResultPtr r = signalOnly->Fit("fSignalGauss", "SRQ0", "", 1.29,
                                     1.38);
 
@@ -235,7 +237,7 @@ void PlotXi(TString fileName) {
       float backgroundErr=0;
       float lowerBound=1.322-0.005;
       float upperBound=1.322+0.005;
-      if (iBin > 1) {
+      if (iBin > 0) {
         //  xiMass->DrawCopy();
         //  SetStyle(false,false);
         FitLambda(xiPt[iBin], signal, signalErr, background, backgroundErr, lowerBound,upperBound);
@@ -267,7 +269,7 @@ void PlotXi(TString fileName) {
         LambdaLabel.SetNDC(kTRUE);
         LambdaLabel.SetTextSize(gStyle->GetTextSize()*0.8);
         LambdaLabel.DrawLatex(gPad->GetUxmax()-0.8, gPad->GetUymax()-0.39,
-                              Form("%.2f < p_{T} < %.2f}",xiMass2D->GetXaxis()->GetBinLowEdge(2*iBin+1),xiMass2D->GetXaxis()->GetBinUpEdge(2*iBin+2)));
+                              Form("%.2f < p_{T} < %.2f",xiMass2D->GetXaxis()->GetBinLowEdge(2*iBin+1),xiMass2D->GetXaxis()->GetBinUpEdge(2*iBin+2)));
       }
     }
     SetStyleHisto(xiMass,20,1);
