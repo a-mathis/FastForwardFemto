@@ -250,9 +250,12 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   if(!histRE_relK_ApAp) histRE_relK_ApAp = (TH1F*)listTP->FindObject("fAntiProtonAntiProtonRelK");
   TH1F* histME_relK_ApAp = (TH1F*)listTP->FindObject("AntiProtonAntiProton_relK_FB_ME");
   if(!histME_relK_ApAp) histME_relK_ApAp = (TH1F*)listTP->FindObject("fAntiProtonAntiProtonRelKME");
+
+
   TH1F *hist_CF_Lp_ALAp_exp[3];
   TH1F *hist_CF_LL_ALAL_exp[3];
   TH1F *hist_CF_pp_ApAp_exp[3];
+
   hist_CF_Lp_ALAp_exp[0] = Calculate_CF(histRE_relK_Lp,histME_relK_Lp,"hist_CF_Lp_exp",normleft,normright);
   hist_CF_Lp_ALAp_exp[1] = Calculate_CF(histRE_relK_ALAp,histME_relK_ALAp,"hist_CF_ALAp_exp",normleft,normright);
   hist_CF_Lp_ALAp_exp[2] = add_CF(hist_CF_Lp_ALAp_exp[0],hist_CF_Lp_ALAp_exp[1],"hist_CF_Lp_ALAp_exp_sum");
@@ -262,6 +265,7 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   hist_CF_pp_ApAp_exp[0] = Calculate_CF(histRE_relK_pp,histME_relK_pp,"hist_CF_pp",normleft,normright);
   hist_CF_pp_ApAp_exp[1] = Calculate_CF(histRE_relK_ApAp,histME_relK_ApAp,"hist_CF_ApAp",normleft,normright);
   hist_CF_pp_ApAp_exp[2] = add_CF(hist_CF_pp_ApAp_exp[0],hist_CF_pp_ApAp_exp[1],"hist_CF_pp_ApAp_exp_sum");
+
   SetStyleHisto(hist_CF_pp_ApAp_exp[0], 1,1);
   SetStyleHisto(hist_CF_Lp_ALAp_exp[0], 1,1);
   SetStyleHisto(hist_CF_LL_ALAL_exp[0], 1,1);
