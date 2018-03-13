@@ -6,7 +6,8 @@ void MakeItLookLikeOli(const char *fileName) {
   TList *AliEventCuts;
   TList *SPdir=new TList();
   SPdir->SetName("SPdir_0");
-
+  TList *outResults=new TList();
+  outResults->SetName("Results");
   TString RelKNames[6]={"Proton","AntiProton","Lambda","AntiLambda","Xi","AntiXi"};
   TH1F* SEDist[6][6];
   TH1F* MEDist[6][6];
@@ -204,6 +205,14 @@ void MakeItLookLikeOli(const char *fileName) {
       }
     }
   }
+  int iCounter=0;
+  TList *OuttmpList[2];
+  OuttmpList[0]=new TList();
+  OuttmpList[0]->SetName(Form("Particle%i_Particle%i",0,4));
+  outResults->Add(OuttmpList[0]);
+  OuttmpList[1]=new TList();
+  OuttmpList[1]->SetName(Form("Particle%i_Particle%i",1,5));
+  outResults->Add(OuttmpList[1]);
 
   TDirectoryFile *dirResults=(TDirectoryFile*)(file->FindObjectAny("Results"));
   if (dirResults) {
@@ -242,18 +251,28 @@ void MakeItLookLikeOli(const char *fileName) {
             TString NewMEName=Form("f%s%sRelKME",RelKNames[iPart1].Data(),RelKNames[iPart2].Data());
             MEDist[iPart1][iPart2]->SetNameTitle(NewMEName.Data(),NewMEName.Data());
             TPdir->Add(MEDist[iPart1][iPart2]);
+            if ((iPart1==0&&iPart2==4)||(iPart1==1&&iPart2==5)) {
+              OuttmpList[iCounter]->Add(SEDist[iPart1][iPart2]->Clone(SEName.Data()));
+              OuttmpList[iCounter]->Add(MEDist[iPart1][iPart2]->Clone(MEName.Data()));
+              iCounter++;
+            }
           }
         }
       }
     }
   }
   TFile *output=new TFile("Renamed.root","RECREATE");
+
   TDirectoryFile* dirOutput=new TDirectoryFile("PWGCF_PLFemto_0","PWGCF_PLFemto_0");
   dirOutput->Add(TPdir);
   dirOutput->Add(PIDdir);
   dirOutput->Add(AliEventCuts);
   dirOutput->Add(SPdir);
   dirOutput->Write("PWGCF_PLFemto_0",TObject::kSingleKey);
+
+  TDirectoryFile* dirOutputMine=new TDirectoryFile("Results","Results");
+  dirOutputMine->Add(outResults);
+  dirOutputMine->Write("Results",TObject::kSingleKey);
 
 
   //for the systematics:
