@@ -259,6 +259,8 @@ void plotAN(const char* file="~/Results/LHC17p_fast/AnalysisResults.root")
   auto* aV0aV0shared = (TH1F*)listSP->FindObject("fNAntiV0TrackSharing");
   auto* V0pshared = (TH1F*)listSP->FindObject("fNV0protonSharedTracks");
   auto* aV0apshared = (TH1F*)listSP->FindObject("fNAntiV0AntiprotonSharedTracks");
+  auto* Xipshared = (TH1F*)listSP->FindObject("fNXiSharedTracks");
+  auto* aXiapshared = (TH1F*)listSP->FindObject("fNAntiXiAntiprotonSharedTracks");
 
   auto *cCutStats = new TCanvas();
   SetStyleHisto(histCutStats, 0, 1);
@@ -575,6 +577,19 @@ void plotAN(const char* file="~/Results/LHC17p_fast/AnalysisResults.root")
   aV0apshared->Draw("hist");
   cShared->Print("ANplot/SharedTracks.pdf");
 
+  auto *cSharedpXi=new TCanvas("cSharedXi", "cSharedXi", 1250,1000);
+  cSharedpXi->Divide(2,1);
+  SetStyleHisto(Xipshared, 0, 1);
+  Xipshared->SetTitle("; # p-#Xi pairs with shared tracks; Entries");
+  SetStyleHisto(aXiapshared, 0, 1);
+  aXiapshared->SetTitle("; # #bar{p}-#bar{#Xi} pairs with shared tracks; Entries");
+  cSharedpXi->cd(1);
+  cSharedpXi->cd(1)->SetLogy();
+  Xipshared->Draw("hist");
+  cSharedpXi->cd(2);
+  cSharedpXi->cd(2)->SetLogy();
+  aXiapshared->Draw("hist");
+  cSharedpXi->Print("ANplot/SharedTracksXi.pdf");
   // OUTPUT
   std::cout << "==========================\n";
   std::cout << "kINT7 triggers \t" << Form("%.1f", nTriggers/(1E6)) << " x E6 \n";

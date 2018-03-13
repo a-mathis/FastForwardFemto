@@ -121,6 +121,61 @@ void MakeItLookLikeOli(const char *fileName) {
     std::cout << "No Proton Cuts \n";
   }
 
+  TDirectoryFile *dirAntiProtonCuts=(TDirectoryFile*)(file->FindObjectAny("AntiTrackCuts"));
+  if (dirAntiProtonCuts) {
+    TList *tmp=dirAntiProtonCuts->GetListOfKeys();
+    TString name=tmp->At(0)->GetName();
+    TList *AntiTrackCuts;
+    dirAntiProtonCuts->GetObject(name,AntiTrackCuts);
+    if (AntiTrackCuts) {
+      TH2F *dcaXYProton=(TH2F*)AntiTrackCuts->FindObject("DCAXYPtBinningTot");
+      TH1F *projDCAXY=(TH1F*)dcaXYProton->ProjectionY("fAntiProtonDCAxy");
+      SPdir->Add(projDCAXY);
+      //we need to trick this into a TH2F* for every pt bin
+      for (int i =0; i<20;++i) {
+        TString DCAXYOliHistName=Form("fAntiProtonDCAxyDCAzPt%i",i);
+        TH2F *outputHist=new TH2F(DCAXYOliHistName.Data(),DCAXYOliHistName.Data(),500,-5,5,500,-5,5);
+        for (int iBin=1;iBin<=500;++iBin) {
+          outputHist->SetBinContent(iBin,outputHist->GetYaxis()->FindBin(0.),dcaXYProton->GetBinContent(i+1,iBin));
+          SPdir->Add(outputHist);
+        }
+      }
+      TList *after=(TList*)AntiTrackCuts->FindObject("after");
+      if (after) {
+        TH2F *AfterDCAXY=(TH2F*)after->FindObject("DCAXY_after");
+        TH1F *DCAXY1D=(TH1F*)AfterDCAXY->ProjectionY("fAntiProtonDCAxyCutz");
+        SPdir->Add(DCAXY1D);
+
+        TH1F *AfterPt=(TH1F*)after->FindObject("pTDist_after");
+        AfterPt->SetName("fAntiProtonPt");
+        SPdir->Add(AfterPt);
+
+        TH1F *AfterPhi=(TH1F*)after->FindObject("phiDist_after");
+        AfterPhi->SetName("fAntiProtonPhi");
+        SPdir->Add(AfterPhi);
+
+        TH1F *AfterEta=(TH1F*)after->FindObject("EtaDist_after");
+        AfterEta->SetName("fAntiProtonEta");
+        SPdir->Add(AfterEta);
+
+        TH1F *AfterSigmaTPC=(TH1F*)after->FindObject("NSigTPC_after");
+        AfterSigmaTPC->SetName("fAntiProtonNSigmaTPC");
+        PIDdir->Add(AfterSigmaTPC);
+
+        TH1F *AfterSigmaTOF=(TH1F*)after->FindObject("NSigTOF_after");
+        AfterSigmaTOF->SetName("fAntiProtonNSigmaCombined");
+        PIDdir->Add(AfterSigmaTOF);
+
+      } else {
+        std::cout << "No After Anti  Track Cuts \n";
+      }
+    } else {
+      std::cout << "No Anti Track Cuts \n";
+    }
+  } else {
+    std::cout << "No AntiProton Cuts \n";
+  }
+
   TDirectoryFile *dirv0Cuts=(TDirectoryFile*)(file->FindObjectAny("v0Cuts"));
   if (dirv0Cuts) {
     TList *tmp=dirv0Cuts->GetListOfKeys();
@@ -130,6 +185,12 @@ void MakeItLookLikeOli(const char *fileName) {
     if (v0CutList) {
       TList *v0Cuts = (TList*)v0CutList->FindObject("v0Cuts");
       if (v0Cuts) {
+        TH2F *InvMassPt=(TH2F*)v0Cuts->FindObject("InvMassPt");
+        for (int i =0; i<8;++i) {
+          TString namePtLambda=Form("fInvMassLambdawCutsPtBin%i",i);
+          TH1F* proj=(TH1F*)InvMassPt->ProjectionY(namePtLambda.Data(),i+1,i+2);
+          SPdir->Add(proj);
+        }
         TH1F *AfterInvMassLambda=(TH1F*)v0Cuts->FindObject("InvMasswithCuts");
         AfterInvMassLambda->SetName("fInvMassLambdawCuts");
         SPdir->Add(AfterInvMassLambda);

@@ -68,8 +68,8 @@ void SetStyle(bool graypalette, bool title)
   gStyle->SetPadColor(10);
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
-  //  gStyle->SetPadBottomMargin(0.15);
-  //  gStyle->SetPadLeftMargin(0.15);
+//  gStyle->SetPadBottomMargin(0.15);
+//  gStyle->SetPadLeftMargin(0.15);
   gStyle->SetPadBottomMargin(0.16);
   gStyle->SetPadLeftMargin(0.15);
   gStyle->SetHistLineWidth(1);
@@ -205,6 +205,7 @@ void PlotXi(TString fileName) {
   TDirectoryFile *dirExp=(TDirectoryFile*)(file->FindObjectAny("CascadeCuts"));
   TCanvas *Xi= new TCanvas("Xi","Xi",0,0,1500,1100);
   TCanvas *PtXi= new TCanvas("PtXi","PtXi",0,0,1500,1100);
+  TH1F *Purity=0;
   PtXi->Divide(3,3);
   if (dirExp) {
     TList *tmp=dirExp->GetListOfKeys();
@@ -221,6 +222,8 @@ void PlotXi(TString fileName) {
     }
     xiMass2D=(TH2F*)Cascade->FindObject("InvMassXiPt");
     xiMass=(TH1F*)xiMass2D->ProjectionY("InvMassXi");
+    Purity=new TH1F("Purity","Purity",10,xiMass2D->GetXaxis()->GetBinLowEdge(1),xiMass2D->GetXaxis()->GetBinUpEdge(21));
+    std::cout << xiMass2D->GetXaxis()->GetBinLowEdge(1) << '\t' << xiMass2D->GetXaxis()->GetBinUpEdge(21);
     for (int iBin = 0; iBin<9; ++iBin) {
       PtXi->cd(1+iBin);
       TString XiNamePt=Form("XiPt_%i",iBin);
@@ -263,6 +266,7 @@ void PlotXi(TString fileName) {
                                    xiMass2D->GetXaxis()->GetBinLowEdge(2*iBin+1),xiMass2D->GetXaxis()->GetBinUpEdge(2*iBin+2),
                                    signal, meanMass*1000.f, meanWidth*1000.f,
                                    signal/(signal+background)*100.f));//#splitline{#splitline{
+        Purity->SetBinContent(iBin+1,signal/(signal+background)*100.f);
       } else {
         xiPt[iBin]->DrawCopy();
         TLatex LambdaLabel;
@@ -317,5 +321,24 @@ void PlotXi(TString fileName) {
   TLatex BeamTextLambda;
   BeamTextLambda.SetNDC(kTRUE);
   BeamTextLambda.DrawLatex(gPad->GetUxmax()-0.8, gPad->GetUymax()-0.2,
-                           "p-p (2017) #sqrt{#it{s}} = 13 TeV");
+                           "p-Pb (2017) #sqrt{#it{s}} = 5.02 TeV");
+//  TH1F *dummy=new TH1F("dummy","dummy",9,0.6,7.121051);//,10,xiMass2D->GetXaxis()->GetBinLowEdge(1),xiMass2D->GetXaxis()->GetBinUpEdge(21));
+//  dummy->GetXaxis()->SetTitle("P_{T} (GeV/#it{c})");
+//  dummy->GetYaxis()->SetTitle("Purity");
+//  dummy->GetYaxis()->SetRangeUser(80,100);
+//  dummy->SetTitle(";P;");
+  TCanvas *cPurity=new TCanvas("cPurity","cPurity");
+  cPurity->cd();
+  SetStyleHisto(Purity,21,2);
+//  Purity->SetLineColor(fColors[2]);
+//  Purity->SetMarkerColor(fColors[2]);
+//  Purity->SetMarkerStyle(20);
+//  Purity->SetMarkerSize(2);
+  Purity->GetYaxis()->SetRangeUser(80,100);
+  Purity->SetTitle(";P_{T} (GeV/#it{c});Purity");
+  Purity->SetStats(0);
+  Purity->GetYaxis()->SetTitleOffset(1.);
+  Purity->GetXaxis()->SetTitleOffset(.9);
+//  dummy->DrawCopy();
+  Purity->DrawCopy("p");
 }
