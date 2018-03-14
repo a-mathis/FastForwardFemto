@@ -1442,6 +1442,13 @@ int systematics(const char* file,const char *output="systematics_output")
     CanSysErrorBudgetPPAPAP->cd(protonVariation+1);
     DrawHist(hCFPPAPAP_errBudget[protonVariation],"k* (GeV/#it{c})","|1 - #it{C}(k*)_{variation}/#it{C}(k*)_{default}|",1,1,1.);
     hCFPPAPAP_errBudget[protonVariation]->SetTitle(protonCut[protonVariation]);
+    TF1 *f1 = new TF1("f1","pol0",0,1);
+    hCFPPAPAP_errBudget[protonVariation]->Fit("f1","R","",0,0.2);
+    f1->Draw("SAME");
+    TLatex LambdaLabel;
+    LambdaLabel.SetNDC(kTRUE);
+    LambdaLabel.SetTextSize(gStyle->GetTextSize()*1.2);
+    LambdaLabel.DrawLatex(gPad->GetUxmax()-0.8, gPad->GetUymax()-0.39,Form("Par Fit: %.2f",f1->GetParameter(0)*100));
   }
    if(rebinPP == 1) CanSysErrorBudgetPPAPAP->Print("PP_Budget.pdf");
   else CanSysErrorBudgetPPAPAP->Print(Form("PP_Budget_%i.pdf", rebinPP));
@@ -1453,6 +1460,13 @@ int systematics(const char* file,const char *output="systematics_output")
     CanSysErrorBudgetPLAPAL->cd(V0Variation+1);
     DrawHist(hCFPLAPAL_errBudget[V0Variation],"k* (GeV/#it{c})","|1 - #it{C}(k*)_{variation}/#it{C}(k*)_{default}|",1,1,1.);
     hCFPLAPAL_errBudget[V0Variation]->SetTitle(v0Cut[V0Variation]);
+    TF1 *f1 = new TF1("f1","pol0",0,1);
+    hCFPLAPAL_errBudget[V0Variation]->Fit("f1","R","",0,0.2);
+    f1->Draw("SAME");
+    TLatex LambdaLabel;
+    LambdaLabel.SetNDC(kTRUE);
+    LambdaLabel.SetTextSize(gStyle->GetTextSize()*1.2);
+    LambdaLabel.DrawLatex(gPad->GetUxmax()-0.8, gPad->GetUymax()-0.39,Form("Par Fit: %.2f",f1->GetParameter(0)*100));
   }
    if(rebinLP == 1) CanSysErrorBudgetPLAPAL->Print("PL_Budget.pdf");
   else CanSysErrorBudgetPLAPAL->Print(Form("PL_Budget_%i.pdf", rebinLP));
@@ -1464,6 +1478,13 @@ int systematics(const char* file,const char *output="systematics_output")
     CanSysErrorBudgetLLALAL->cd(V0Variation-NTasksProtonVariations+1);
     DrawHist(hCFLLALAL_errBudget[V0Variation],"k* (GeV/#it{c})","|1 - #it{C}(k*)_{variation}/#it{C}(k*)_{default}|",1,1,1.);
     hCFLLALAL_errBudget[V0Variation]->SetTitle(v0Cut[V0Variation]);
+    TF1 *f1 = new TF1("f1","pol0",0,1);
+    hCFLLALAL_errBudget[V0Variation]->Fit("f1","R","",0,0.2);
+    f1->Draw("SAME");
+    TLatex LambdaLabel;
+    LambdaLabel.SetNDC(kTRUE);
+    LambdaLabel.SetTextSize(gStyle->GetTextSize()*1.2);
+    LambdaLabel.DrawLatex(gPad->GetUxmax()-0.8, gPad->GetUymax()-0.39,Form("Par Fit: %.2f",f1->GetParameter(0)*100));
   }
    if(rebinLL == 1) CanSysErrorBudgetLLALAL->Print("LL_Budget.pdf");
   else CanSysErrorBudgetLLALAL->Print(Form("LL_Budget_%i.pdf", rebinLL));
