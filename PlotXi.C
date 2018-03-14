@@ -321,7 +321,7 @@ void PlotXi(TString fileName) {
   TLatex BeamTextLambda;
   BeamTextLambda.SetNDC(kTRUE);
   BeamTextLambda.DrawLatex(gPad->GetUxmax()-0.8, gPad->GetUymax()-0.2,
-                           "p-Pb (2017) #sqrt{#it{s}} = 5.02 TeV");
+                           "p-p (2017) #sqrt{#it{s}} = 13 TeV");
 //  TH1F *dummy=new TH1F("dummy","dummy",9,0.6,7.121051);//,10,xiMass2D->GetXaxis()->GetBinLowEdge(1),xiMass2D->GetXaxis()->GetBinUpEdge(21));
 //  dummy->GetXaxis()->SetTitle("P_{T} (GeV/#it{c})");
 //  dummy->GetYaxis()->SetTitle("Purity");
