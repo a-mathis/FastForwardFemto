@@ -278,16 +278,19 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   if(!histRE_relK_ApAp) histRE_relK_ApAp = (TH1F*)listTP->FindObject("fAntiProtonAntiProtonRelK");
   TH1F* histME_relK_ApAp = (TH1F*)listTP->FindObject("AntiProtonAntiProton_relK_FB_ME");
   if(!histME_relK_ApAp) histME_relK_ApAp = (TH1F*)listTP->FindObject("fAntiProtonAntiProtonRelKME");
-
-  TDirectoryFile *dirResults=(TDirectoryFile*)(_file0->FindObjectAny("Results"));
-  TList *Results;
-  dirResults->GetObject("Results",Results);
-  TList* tmpFolder=(TList*)Results->FindObject("Particle0_Particle4");
-  TH1F* histRE_relK_Xip = (TH1F*)tmpFolder->FindObject("SEDist_Particle0_Particle4");
-  TH1F* histME_relK_Xip = (TH1F*)tmpFolder->FindObject("MEDist_Particle0_Particle4");
-  tmpFolder=(TList*)Results->FindObject("Particle1_Particle5");
-  TH1F* histRE_relK_AXiAp = (TH1F*)tmpFolder->FindObject("SEDist_Particle1_Particle5");
-  TH1F* histME_relK_AXiAp = (TH1F*)tmpFolder->FindObject("MEDist_Particle1_Particle5");
+  TH1F* histRE_relK_Xip  =    (TH1F*)listTP->FindObject("fProtonXiRelK");
+  TH1F* histME_relK_Xip   =   (TH1F*)listTP->FindObject("fProtonXiRelKME");
+  TH1F* histRE_relK_AXiAp    = (TH1F*)listTP->FindObject("fAntiProtonAntiXiRelK");
+  TH1F* histME_relK_AXiAp    = (TH1F*)listTP->FindObject("fAntiProtonAntiXiRelKME");
+//  TDirectoryFile *dirResults=(TDirectoryFile*)(_file0->FindObjectAny("Results"));
+//  TList *Results;
+//  dirResults->GetObject("Results",Results);
+//  TList* tmpFolder=(TList*)Results->FindObject("Particle0_Particle4");
+//  TH1F* histRE_relK_Xip = (TH1F*)tmpFolder->FindObject("SEDist_Particle0_Particle4");
+//  TH1F* histME_relK_Xip = (TH1F*)tmpFolder->FindObject("MEDist_Particle0_Particle4");
+//  tmpFolder=(TList*)Results->FindObject("Particle1_Particle5");
+//  TH1F* histRE_relK_AXiAp = (TH1F*)tmpFolder->FindObject("SEDist_Particle1_Particle5");
+//  TH1F* histME_relK_AXiAp = (TH1F*)tmpFolder->FindObject("MEDist_Particle1_Particle5");
   TH1F *hist_CF_Lp_ALAp_exp[3];
   TH1F *hist_CF_LL_ALAL_exp[3];
   TH1F *hist_CF_pp_ApAp_exp[3];
@@ -350,6 +353,7 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   TH1F* histME_relK_ppsim = (TH1F*)listTPsim->FindObject("fProtonProtonRelKME");
   TH1F* histRE_relK_ApApsim = (TH1F*)listTPsim->FindObject("fAntiProtonAntiProtonRelK");
   TH1F* histME_relK_ApApsim = (TH1F*)listTPsim->FindObject("fAntiProtonAntiProtonRelKME");
+/*<<<<<<< de711a89a2712e9248a539b3759977933bae2734
   TDirectoryFile *dirResultsSim=(TDirectoryFile*)(_file0sim->FindObjectAny("MBResults"));
   dirResultsSim->GetObject("MBResults",Results);
   tmpFolder=(TList*)Results->FindObject("Particle0_Particle4");
@@ -359,6 +363,19 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   TH1F* histRE_relK_AXiApsim = (TH1F*)tmpFolder->FindObject("SEDist_Particle1_Particle5");
   TH1F* histME_relK_AXiApsim = (TH1F*)tmpFolder->FindObject("MEDist_Particle1_Particle5");
 
+================*/
+  TH1F* histRE_relK_Xipsim = (TH1F*)listTPsim->FindObject("fProtonXiRelK");
+  TH1F* histME_relK_Xipsim = (TH1F*)listTPsim->FindObject("fProtonXiRelKME");
+  TH1F* histRE_relK_AXiApsim = (TH1F*)listTPsim->FindObject("fAntiProtonAntiXiRelK");
+  TH1F* histME_relK_AXiApsim = (TH1F*)listTPsim->FindObject("fAntiProtonAntiXiRelKME");
+//  TDirectoryFile *dirResultsSim=(TDirectoryFile*)(_file0sim->FindObjectAny("MBResults"));
+//  dirResultsSim->GetObject("MBResults",Results);
+//  tmpFolder=(TList*)Results->FindObject("Particle0_Particle4");
+//  TH1F* histRE_relK_Xipsim = (TH1F*)tmpFolder->FindObject("SEDist_Particle0_Particle4");
+//  TH1F* histME_relK_Xipsim = (TH1F*)tmpFolder->FindObject("MEDist_Particle0_Particle4");
+//  tmpFolder=(TList*)Results->FindObject("Particle1_Particle5");
+//  TH1F* histRE_relK_AXiApsim = (TH1F*)tmpFolder->FindObject("SEDist_Particle1_Particle5");
+//  TH1F* histME_relK_AXiApsim = (TH1F*)tmpFolder->FindObject("MEDist_Particle1_Particle5");
   TH1F *hist_CF_Lp_ALAp_sim[3];
   TH1F *hist_CF_LL_ALAL_sim[3];
   TH1F *hist_CF_pp_ApAp_sim[3];

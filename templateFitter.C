@@ -915,7 +915,7 @@ int templateFitter(const char* file, const char* file2) {
       "hist_proton_purity", "Purity of protons estimated from Monte Carlo",
       Purity_Ptbins, pt_proton_threshold_low, pt_proton_threshold_up);
   TH1F* hist_proton_all = new TH1F(
-      "hist_proton_purity", "Purity of protons estimated from Monte Carlo",
+      "hist_proton_purity2", "Purity of protons estimated from Monte Carlo",
       Purity_Ptbins, pt_proton_threshold_low, pt_proton_threshold_up);
 
   Double_t purity_proton_ptweighted = 0.;
@@ -1955,7 +1955,7 @@ int templateFitter(const char* file, const char* file2) {
     fraction_Lambda_material_ptweighted /= ptweight_Lambda_pt;
     fraction_Lambda_background_ptweighted /= ptweight_Lambda_pt;
 
-    const Int_t PtbinCPA_repo = 3;
+    const Int_t PtbinCPA_repo = 2;
 
     TCanvas* Can_proton_CPA_representation_fit =
         new TCanvas("Can_proton_CPA_representation_fit",

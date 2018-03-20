@@ -140,7 +140,7 @@ void FitLambda(TH1F* histo, float &signal, float &signalErr, float &background, 
 
   // fit signal only
   TF1 *fSignalSingleGauss = new TF1("fSignalSingleGauss", "gaus", 1.095, 1.15);
-//  fSignalSingleGauss->SetParameter(1, 1.115);
+  //  fSignalSingleGauss->SetParameter(1, 1.115);
   signalOnly->Fit("fSignalSingleGauss", "SRQ0", "", 1.1075, 1.1235);
 
   TF1 *fSignalGauss = new TF1("fSignalGauss", "gaus(0) + gaus(3)", 1.1, 1.3);
@@ -544,7 +544,7 @@ void plotAN(const char* file="~/Results/LHC17p_fast/AnalysisResults.root")
   TF1 *fLambdaPurity = new TF1("fLambdaPurity", "pol0", 0.3, 4.3);
   fLambdaPurity->SetLineColor(fColors[0]);
   fLambdaPurity->SetLineStyle(2);
-//  fLambdaPurity->SetParameter(0, computeWeightedAverage(hRecoLambdaPtPurity, grLambdaPurity, 0.3, 4.3));
+  //  fLambdaPurity->SetParameter(0, computeWeightedAverage(hRecoLambdaPtPurity, grLambdaPurity, 0.3, 4.3));
   fLambdaPurity->Draw("same");
   TLatex purity;
   purity.SetTextFont(43);
@@ -576,20 +576,21 @@ void plotAN(const char* file="~/Results/LHC17p_fast/AnalysisResults.root")
   cShared->cd(4)->SetLogy();
   aV0apshared->Draw("hist");
   cShared->Print("ANplot/SharedTracks.pdf");
-
-  auto *cSharedpXi=new TCanvas("cSharedXi", "cSharedXi", 1250,1000);
-  cSharedpXi->Divide(2,1);
-  SetStyleHisto(Xipshared, 0, 1);
-  Xipshared->SetTitle("; # p-#Xi pairs with shared tracks; Entries");
-  SetStyleHisto(aXiapshared, 0, 1);
-  aXiapshared->SetTitle("; # #bar{p}-#bar{#Xi} pairs with shared tracks; Entries");
-  cSharedpXi->cd(1);
-  cSharedpXi->cd(1)->SetLogy();
-  Xipshared->Draw("hist");
-  cSharedpXi->cd(2);
-  cSharedpXi->cd(2)->SetLogy();
-  aXiapshared->Draw("hist");
-  cSharedpXi->Print("ANplot/SharedTracksXi.pdf");
+  if (Xipshared) {
+    auto *cSharedpXi=new TCanvas("cSharedXi", "cSharedXi", 1250,1000);
+    cSharedpXi->Divide(2,1);
+    SetStyleHisto(Xipshared, 0, 1);
+    Xipshared->SetTitle("; # p-#Xi pairs with shared tracks; Entries");
+    SetStyleHisto(aXiapshared, 0, 1);
+    aXiapshared->SetTitle("; # #bar{p}-#bar{#Xi} pairs with shared tracks; Entries");
+    cSharedpXi->cd(1);
+    cSharedpXi->cd(1)->SetLogy();
+    Xipshared->Draw("hist");
+    cSharedpXi->cd(2);
+    cSharedpXi->cd(2)->SetLogy();
+    aXiapshared->Draw("hist");
+    cSharedpXi->Print("ANplot/SharedTracksXi.pdf");
+  }
   // OUTPUT
   std::cout << "==========================\n";
   std::cout << "kINT7 triggers \t" << Form("%.1f", nTriggers/(1E6)) << " x E6 \n";

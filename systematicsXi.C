@@ -633,7 +633,7 @@ int systematicsXi(const char* file,const char *output="systematics_output")
     hCFPLAPAL[taskNumber]->GetXaxis()->SetRangeUser(0,0.5);
     hCFPLAPAL[taskNumber]->SetLineColor(taskNumber+1);
     hCFPLAPAL[taskNumber]->SetMarkerColor(taskNumber+1);
-    if(taskNumber == 0) {hCFPLAPAL[taskNumber]->SetMarkerStyle(23); hCFPLAPAL[taskNumber]->SetMarkerSize(1.3);hCFPLAPAL[taskNumber]->SetTitle("p#Lambda #oplus #bar{p}#bar{#Lambda}"); hCFPLAPAL[taskNumber]->Draw();}
+    if(taskNumber == 0) {hCFPLAPAL[taskNumber]->SetMarkerStyle(23); hCFPLAPAL[taskNumber]->SetMarkerSize(1.3);hCFPLAPAL[taskNumber]->SetTitle("p#Xi #oplus #bar{p}#bar{#Xi}"); hCFPLAPAL[taskNumber]->Draw();}
     else hCFPLAPAL[taskNumber]->Draw("same");
 
   }
@@ -661,8 +661,7 @@ int systematicsXi(const char* file,const char *output="systematics_output")
   //Evaluate the systematic error for pL pairs. Since we vary the values up and down we take the larger systematic uncertainty per bin
   //To not confuse oneself we use for every bin an own array to see what happens
 
-  std::vector<const char*> v0Cut(20
-                                 );
+  std::vector<const char*> v0Cut(20);
   v0Cut[0] = "#it{p}_{T} down";
   v0Cut[1] = "#it{p}_{T} up";
   v0Cut[2] = "#eta up";
@@ -744,7 +743,7 @@ int systematicsXi(const char* file,const char *output="systematics_output")
   TH1F *hCFPLAPAL_Barlow[NTasksV0Variations];
   //Plot all variations for proton pairs:
   TCanvas *CanCFPLAPALBarlow = new TCanvas("CanCFPLAPALBarlow","CanCFPLAPALBarlow",0,0,1500,1000);
-  CanCFPLAPALBarlow->Divide(5,4);
+  CanCFPLAPALBarlow->Divide(5,5);
   std::cout << "NTasksV0Variations:   " << NTasksV0Variations << std::endl;
   for(int V0Variation = 0; V0Variation < NTasksV0Variations; V0Variation++)
   {
@@ -1033,7 +1032,7 @@ int systematicsXi(const char* file,const char *output="systematics_output")
   CanSysErrorPlotting->Divide(2,1);
   CanSysErrorPlotting->cd(1);
   DrawHist(hCFPLAPAL[0],"k* (GeV/#it{c})","#it{C}(k*)",0,1,1.);
-  hCFPLAPAL[0]->SetTitle("p-#Lambda #oplus #bar{p}#bar{#Lambda}");
+  hCFPLAPAL[0]->SetTitle("p-#Xi #oplus #bar{p}#bar{#Xi}");
   graphError_CPLAPAL->Draw("2same");
   CanSysErrorPlotting->cd(2);
   StyleGraph(graphError_Ratio_pL);
@@ -1062,7 +1061,7 @@ int systematicsXi(const char* file,const char *output="systematics_output")
 
   TCanvas *CanPlotting = new TCanvas("CanPlotting","CanPlotting",0,0,1500,500);
   DrawHist(hCFPLAPALorig,"k* (GeV/#it{c})","#it{C}(k*)",0,1,1.);
-  hCFPLAPALorig->SetTitle("p-#Lambda #oplus #bar{p}#bar{#Lambda}");
+  hCFPLAPALorig->SetTitle("p-#Xi #oplus #bar{p}#bar{#Xi}");
   hCFPLAPALorig->GetXaxis()->SetRangeUser(0,0.25);
   hCFPLAPALorig->GetYaxis()->SetRangeUser(0.5,2.1);
   grFinalErrorPL->Draw("2 same");
