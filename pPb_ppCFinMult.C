@@ -202,7 +202,7 @@ void pPb_ppCFinMult(const char* input) {
   TH1F* MEDist[2][3];
   TDirectoryFile *dirResults=(TDirectoryFile*)(file->FindObjectAny("Results"));
   TString PartName[2]={"Proton","AntiProton"};
-  int MultBins[4]={0,8,12,21};
+  int MultBins[4]={1,8,12,21};
   if (dirResults) {
     TList *tmp=dirResults->GetListOfKeys();
     TString name=tmp->At(0)->GetName();
@@ -233,10 +233,10 @@ void pPb_ppCFinMult(const char* input) {
           }
           for (int iMult=0;iMult<3;++iMult) {
             TString projSEName=Form("f%s%sRelK_%i",PartName[iPart].Data(),PartName[iPart].Data(),iMult);
-            SEDist[iPart][iMult]=(TH1F*)SEMultDist[iPart]->ProjectionX(projSEName.Data(),MultBins[iMult],MultBins[iMult+1]);
+            SEDist[iPart][iMult]=(TH1F*)SEMultDist[iPart]->ProjectionX(projSEName.Data(),MultBins[iMult],MultBins[iMult+1]-1);
             TPdir->Add(SEDist[iPart][iMult]);
             TString projMEName=Form("f%s%sRelKME_%i",PartName[iPart].Data(),PartName[iPart].Data(),iMult);
-            MEDist[iPart][iMult]=(TH1F*)MEMultDist[iPart]->ProjectionX(projMEName.Data(),MultBins[iMult],MultBins[iMult+1]);
+            MEDist[iPart][iMult]=(TH1F*)MEMultDist[iPart]->ProjectionX(projMEName.Data(),MultBins[iMult],MultBins[iMult+1]-1);
             TPdir->Add(MEDist[iPart][iMult]);
           }
         }
