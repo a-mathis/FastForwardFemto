@@ -42,15 +42,15 @@ void SetStyle(bool graypalette=false, bool title=false)
   gStyle->SetLegendFillColor(kWhite);
   gStyle->SetLegendFont(42);
   gStyle->SetLegendBorderSize(0);
-
-  const int NRGBs = 6;
-  Double_t stops[NRGBs];
-  for(int i=0; i<NRGBs; ++i) stops[i] = float(i)/(NRGBs-1);
-
-  Double_t red[NRGBs]   = { 1.,  29./255., 25./255., 27./255., 32./255., 24./255.};
-  Double_t green[NRGBs] = { 1., 221./255., 160./255., 113./255., 74./255., 37./255.};
-  Double_t blue[NRGBs] = {  1., 221./255., 184./255., 154./255., 129./255., 98./255.};
-  TColor::CreateGradientColorTable(NRGBs,stops,red,green,blue,NCont);
+  gStyle->SetPalette(kBird);
+//  const int NRGBs = 6;
+//  Double_t stops[NRGBs];
+//  for(int i=0; i<NRGBs; ++i) stops[i] = float(i)/(NRGBs-1);
+//
+//  Double_t red[NRGBs]   = { 1.,  29./255., 25./255., 27./255., 32./255., 24./255.};
+//  Double_t green[NRGBs] = { 1., 221./255., 160./255., 113./255., 74./255., 37./255.};
+//  Double_t blue[NRGBs] = {  1., 221./255., 184./255., 154./255., 129./255., 98./255.};
+//  TColor::CreateGradientColorTable(NRGBs,stops,red,green,blue,NCont);
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -195,6 +195,7 @@ void TrackSplitting(const char *filename,const char *prefix) {
   const float normright = 0.4;
   TFile *file=TFile::Open(filename);
 
+  float TPCradii[9] = {85.,105.,125.,145.,165.,185.,205.,225.,245.};
   TString RelKNames[6]={"Proton","AntiProton","Lambda","AntiLambda","Xi","AntiXi"};
   TString DaugNames[3]={"#pi","p","#pi"};
   TString ResultsName="";
@@ -257,9 +258,9 @@ void TrackSplitting(const char *filename,const char *prefix) {
               }
               TString CFName="";
               if ((iPart1==0&&iPart2==0)||(iPart1==1&&iPart2==1)) {
-                CFName+= Form("%s-%s d#eta d#Phi at Radius %i",RelKNames[iPart1].Data(),RelKNames[iPart2].Data(),iRad);
+                CFName+= Form("%s-%s d#eta d#Phi at Radius %3.0f",RelKNames[iPart1].Data(),RelKNames[iPart2].Data(),TPCradii[iRad]);
               } else {
-                CFName+= Form("%s-%s %s Daugter d#eta d#Phi at Radius %i",RelKNames[iPart1].Data(),RelKNames[iPart2].Data(),DaugNames[iDaug].Data(),iRad);
+                CFName+= Form("%s-%s %s Daugter d#eta d#Phi at Radius %3.0f",RelKNames[iPart1].Data(),RelKNames[iPart2].Data(),DaugNames[iDaug].Data(),TPCradii[iRad]);
               }
               CFDist[iPart1][iPart2][iDaug][iRad]=(TH2F*)SEDist[iPart1][iPart2][iDaug][iRad]->Clone(CFName.Data());
               CFDist[iPart1][iPart2][iDaug][iRad]->SetTitle(CFName.Data());
