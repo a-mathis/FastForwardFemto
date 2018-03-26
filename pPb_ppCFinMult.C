@@ -188,7 +188,7 @@ TGraphErrors *convertHistoInGev(TH1F *gr) {
   }
   return grOut;
 }
-void pPb_ppCFinMult(const char* input) {
+void pPb_ppCFinMult(const char* input,const char *prefix,bool doCent) {
   TList *TPdir=new TList();
   TPdir->SetName("TPdir_0");
   // Mixed event normalisation
@@ -196,13 +196,23 @@ void pPb_ppCFinMult(const char* input) {
   const float normright = 0.4;
   gStyle->SetCanvasPreferGL(1);
   TFile *file=TFile::Open(input);
-  TH2F* SEMultDist[2];
-  TH2F* MEMultDist[2];
-  TH1F* SEDist[2][3];
-  TH1F* MEDist[2][3];
-  TDirectoryFile *dirResults=(TDirectoryFile*)(file->FindObjectAny("Results"));
-  TString PartName[2]={"Proton","AntiProton"};
+  TH2F* SEMultDist[6][6];
+  TH2F* MEMultDist[6][6];
+  TH2F* SEkTDist[6][6];
+  TH2F* MEkTDist[6][6];
+  TH2F* SEkTCentDist[6][6][3];
+  TH2F* MEkTCentDist[6][6][3];
+  TH2F* SEmTDist[6][6];
+  TH2F* MEmTDist[6][6];
+  TH1F* SEDist[6][6][3];
+  TH1F* MEDist[6][6][3];
+  TString ResultsName="";
+  ResultsName+=prefix;
+  ResultsName+="Results";
+  TString PartName[6]={"Proton","AntiProton","Lambda","AntiLambda","Xi","AntiXi"};
+  int Centralities[4]={0,20,40,90};
   int MultBins[4]={1,8,12,21};
+  TDirectoryFile *dirResults=(TDirectoryFile*)(file->FindObjectAny(ResultsName.Data()));
   if (dirResults) {
     TList *tmp=dirResults->GetListOfKeys();
     TString name=tmp->At(0)->GetName();
@@ -211,38 +221,88 @@ void pPb_ppCFinMult(const char* input) {
     if (!Results) {
       std::cout << "No Results \n";
     } else {
-      for (int iPart=0;iPart<2;++iPart){
-        TString folderName=Form("Particle%i_Particle%i",iPart,iPart);
-        TList* tmpFolder=(TList*)Results->FindObject(folderName.Data());
-        if (!tmpFolder) {
-          std::cout << folderName.Data() <<" not Found\n";
-        } else {
-          TString SEName=Form("SEMultDist_Particle%i_Particle%i",iPart,iPart);
-          SEMultDist[iPart]=(TH2F*)tmpFolder->FindObject(SEName.Data());
-          SEMultDist[iPart]->SetDirectory(0);
-          if (!SEMultDist[iPart]) {
-            std::cout << SEName.Data() << " not Found\n";
-            std::cout << SEName.Data() << " not Found\n";
-          }
-          TString MEName=Form("MEMultDist_Particle%i_Particle%i",iPart,iPart);
-          MEMultDist[iPart]=(TH2F*)tmpFolder->FindObject(MEName.Data());
-          MEMultDist[iPart]->SetDirectory(0);
-          if (!MEMultDist[iPart]) {
-            std::cout << SEName.Data() << " not Found\n";
-            std::cout << SEName.Data() << " not Found\n";
-          }
-          for (int iMult=0;iMult<3;++iMult) {
-            TString projSEName=Form("f%s%sRelK_%i",PartName[iPart].Data(),PartName[iPart].Data(),iMult);
-            SEDist[iPart][iMult]=(TH1F*)SEMultDist[iPart]->ProjectionX(projSEName.Data(),MultBins[iMult],MultBins[iMult+1]-1);
-            TPdir->Add(SEDist[iPart][iMult]);
-            TString projMEName=Form("f%s%sRelKME_%i",PartName[iPart].Data(),PartName[iPart].Data(),iMult);
-            MEDist[iPart][iMult]=(TH1F*)MEMultDist[iPart]->ProjectionX(projMEName.Data(),MultBins[iMult],MultBins[iMult+1]-1);
-            TPdir->Add(MEDist[iPart][iMult]);
+      for (int iPart1=0;iPart1<6;++iPart1){
+        for (int iPart2=iPart1;iPart2<2;++iPart2){
+          TString folderName=Form("Particle%i_Particle%i",iPart1,iPart2);
+          TList* tmpFolder=(TList*)Results->FindObject(folderName.Data());
+          if (!tmpFolder) {
+            std::cout << folderName.Data() <<" not Found\n";
+          } else {
+            TString SEName=Form("SEMultDist_Particle%i_Particle%i",iPart1,iPart2);
+            SEMultDist[iPart1][iPart2]=(TH2F*)tmpFolder->FindObject(SEName.Data());
+            SEMultDist[iPart1][iPart2]->SetDirectory(0);
+            if (!SEMultDist[iPart1][iPart2]) {
+              std::cout << SEName.Data() << " not Found\n";
+              std::cout << SEName.Data() << " not Found\n";
+            }
+            TString MEName=Form("MEMultDist_Particle%i_Particle%i",iPart1,iPart2);
+            MEMultDist[iPart1][iPart2]=(TH2F*)tmpFolder->FindObject(MEName.Data());
+            MEMultDist[iPart1][iPart2]->SetDirectory(0);
+            if (!MEMultDist[iPart1][iPart2]) {
+              std::cout << SEName.Data() << " not Found\n";
+              std::cout << SEName.Data() << " not Found\n";
+            }
+
+            TString SEkTName=Form("SEkTDist_Particle%i_Particle%i",iPart1,iPart2);
+            SEkTDist[iPart1][iPart2]=(TH2F*)tmpFolder->FindObject(SEkTName.Data());
+            SEkTDist[iPart1][iPart2]->SetDirectory(0);
+            if (!SEkTDist[iPart1][iPart2]) {
+              std::cout << SEName.Data() << " not Found\n";
+              std::cout << SEName.Data() << " not Found\n";
+            }
+            TString MEkTName=Form("MEkTDist_Particle%i_Particle%i",iPart1,iPart2);
+            MEkTDist[iPart1][iPart2]=(TH2F*)tmpFolder->FindObject(MEkTName.Data());
+            MEkTDist[iPart1][iPart2]->SetDirectory(0);
+            if (!MEkTDist[iPart1][iPart2]) {
+              std::cout << SEName.Data() << " not Found\n";
+              std::cout << SEName.Data() << " not Found\n";
+            }
+            if (doCent) {
+              for (int iCent=0;iCent<3;++iCent) {
+                TString SEkTCentName=Form("SEkTDistCent%i_Particle%i_Particle%i",Centralities[iCent+1],iPart1,iPart2);
+                SEkTCentDist[iPart1][iPart2][iCent]=(TH2F*)tmpFolder->FindObject(SEkTCentName.Data());
+                SEkTCentDist[iPart1][iPart2][iCent]->SetDirectory(0);
+                if (!SEkTCentDist[iPart1][iPart2][iCent]) {
+                  std::cout << SEName.Data() << " not Found\n";
+                  std::cout << SEName.Data() << " not Found\n";
+                }
+                TString MEkTCentName=Form("MEkTDistCent%i_Particle%i_Particle%i",Centralities[iCent+1],iPart1,iPart2);
+                MEkTCentDist[iPart1][iPart2][iCent]=(TH2F*)tmpFolder->FindObject(MEkTCentName.Data());
+                MEkTCentDist[iPart1][iPart2][iCent]->SetDirectory(0);
+                if (!MEkTCentDist[iPart1][iPart2][iCent]) {
+                  std::cout << SEName.Data() << " not Found\n";
+                  std::cout << SEName.Data() << " not Found\n";
+                }
+              }
+            }
+            TString SEmTName=Form("SEmTDist_Particle%i_Particle%i",iPart1,iPart2);
+            SEmTDist[iPart1][iPart2]=(TH2F*)tmpFolder->FindObject(SEmTName.Data());
+            SEmTDist[iPart1][iPart2]->SetDirectory(0);
+            if (!SEmTDist[iPart1][iPart2]) {
+              std::cout << SEName.Data() << " not Found\n";
+              std::cout << SEName.Data() << " not Found\n";
+            }
+            TString MEmTName=Form("MEmTDist_Particle%i_Particle%i",iPart1,iPart2);
+            MEmTDist[iPart1][iPart2]=(TH2F*)tmpFolder->FindObject(MEmTName.Data());
+            MEmTDist[iPart1][iPart2]->SetDirectory(0);
+            if (!MEmTDist[iPart1][iPart2]) {
+              std::cout << SEName.Data() << " not Found\n";
+              std::cout << SEName.Data() << " not Found\n";
+            }
+
+            for (int iMult=0;iMult<3;++iMult) {
+              TString projSEName=Form("SEDist%s%s_Mult_%i",PartName[iPart1].Data(),PartName[iPart2].Data(),iMult);
+              SEDist[iPart1][iPart2][iMult]=(TH1F*)SEMultDist[iPart1][iPart2]->ProjectionX(projSEName.Data(),MultBins[iMult],MultBins[iMult+1]-1);
+
+              TString projMEName=Form("SEDist%s%s_Mult_%i",PartName[iPart1].Data(),PartName[iPart2].Data(),iMult);
+              MEDist[iPart1][iPart2][iMult]=(TH1F*)MEMultDist[iPart1][iPart2]->ProjectionX(projMEName.Data(),MultBins[iMult],MultBins[iMult+1]-1);
+            }
           }
         }
       }
     }
   }
+
   TH1F *hist_CF_pp_ApAp_exp[3][3];
   TCanvas *cApAp_pp=new TCanvas("cPAP","cPAP",0,0,1500,1100);
   cApAp_pp->Divide(2,1);
@@ -250,29 +310,30 @@ void pPb_ppCFinMult(const char* input) {
   auto* leg= new TLegend(0.45, 0.7, 0.95, 0.95);
   for (int iMult=0;iMult<3;++iMult) {
     TString ppMultName = Form("hist_CF_pp_%i",iMult);
-    hist_CF_pp_ApAp_exp[0][iMult] = Calculate_CF(SEDist[0][iMult],MEDist[0][iMult],ppMultName.Data(),normleft,normright);
+    hist_CF_pp_ApAp_exp[0][iMult] = Calculate_CF(SEDist[0][0][iMult],MEDist[0][0][iMult],ppMultName.Data(),normleft,normright);
     SetStyleHisto(hist_CF_pp_ApAp_exp[0][iMult],21,iMult+2);
     cApAp_pp->cd(1);
     if(iMult==0)hist_CF_pp_ApAp_exp[0][iMult]->DrawCopy();
     else hist_CF_pp_ApAp_exp[0][iMult]->DrawCopy("SAME");
-    TString ApApMultName = Form("hist_CF_ApAp_%i",iMult);
-    hist_CF_pp_ApAp_exp[1][iMult] = Calculate_CF(SEDist[0][iMult],MEDist[0][iMult],ApApMultName.Data(),normleft,normright);
-    SetStyleHisto(hist_CF_pp_ApAp_exp[1][iMult],21,iMult+2);
-    cApAp_pp->cd(2);
-    if(iMult==0)hist_CF_pp_ApAp_exp[1][iMult]->DrawCopy();
-    else hist_CF_pp_ApAp_exp[1][iMult]->DrawCopy("SAME");
-    TString SumppApApMultName = Form("hist_CF_pp_ApAp_exp_sum_%i",iMult);
-    hist_CF_pp_ApAp_exp[2][iMult] = add_CF(hist_CF_pp_ApAp_exp[0][iMult],hist_CF_pp_ApAp_exp[1][iMult],SumppApApMultName.Data());
-    SetStyleHisto(hist_CF_pp_ApAp_exp[2][iMult],20,iMult+2);
-    hist_CF_pp_ApAp_exp[2][iMult]->SetStats(0);
-    hist_CF_pp_ApAp_exp[2][iMult]->GetXaxis()->SetTitleOffset(.9);
-    hist_CF_pp_ApAp_exp[2][iMult]->GetXaxis()->SetRangeUser(0,0.125);
-    hist_CF_pp_ApAp_exp[2][iMult]->GetYaxis()->SetTitleOffset(0.9);
-    hist_CF_pp_ApAp_exp[2][iMult]->SetTitle(";k* (GeV/#it{c}); #it{C}(k*)");
-    cSum->cd();
-    leg->AddEntry(hist_CF_pp_ApAp_exp[2][iMult],Form("Mult. Bin %i",iMult),"lp");
-    if(iMult==0)hist_CF_pp_ApAp_exp[2][iMult]->DrawCopy();
-    else hist_CF_pp_ApAp_exp[2][iMult]->DrawCopy("SAME");
+//
+//    TString ApApMultName = Form("hist_CF_ApAp_%i",iMult);
+//    hist_CF_pp_ApAp_exp[1][iMult] = Calculate_CF(SEDist[0][iMult],MEDist[0][iMult],ApApMultName.Data(),normleft,normright);
+//    SetStyleHisto(hist_CF_pp_ApAp_exp[1][iMult],21,iMult+2);
+//    cApAp_pp->cd(2);
+//    if(iMult==0)hist_CF_pp_ApAp_exp[1][iMult]->DrawCopy();
+//    else hist_CF_pp_ApAp_exp[1][iMult]->DrawCopy("SAME");
+//    TString SumppApApMultName = Form("hist_CF_pp_ApAp_exp_sum_%i",iMult);
+//    hist_CF_pp_ApAp_exp[2][iMult] = add_CF(hist_CF_pp_ApAp_exp[0][iMult],hist_CF_pp_ApAp_exp[1][iMult],SumppApApMultName.Data());
+//    SetStyleHisto(hist_CF_pp_ApAp_exp[2][iMult],20,iMult+2);
+//    hist_CF_pp_ApAp_exp[2][iMult]->SetStats(0);
+//    hist_CF_pp_ApAp_exp[2][iMult]->GetXaxis()->SetTitleOffset(.9);
+//    hist_CF_pp_ApAp_exp[2][iMult]->GetXaxis()->SetRangeUser(0,0.125);
+//    hist_CF_pp_ApAp_exp[2][iMult]->GetYaxis()->SetTitleOffset(0.9);
+//    hist_CF_pp_ApAp_exp[2][iMult]->SetTitle(";k* (GeV/#it{c}); #it{C}(k*)");
+//    cSum->cd();
+//    leg->AddEntry(hist_CF_pp_ApAp_exp[2][iMult],Form("Mult. Bin %i",iMult),"lp");
+//    if(iMult==0)hist_CF_pp_ApAp_exp[2][iMult]->DrawCopy();
+//    else hist_CF_pp_ApAp_exp[2][iMult]->DrawCopy("SAME");
   }
   cSum->cd();
   leg->Draw("SAME");

@@ -257,6 +257,7 @@ void dEtadPhiDist(const char *filename,const char *prefix) {
   CFSumDist[0]=(TH2F*)SESumDist[0]->Clone("Proton Proton");
   CFSumDist[0]->Divide(MESumDist[0]);
   CFSumDist[0]->SetTitle("p-p #oplus #bar{p}-#bar{p}");
+  CFSumDist[0]->GetZaxis()->SetRangeUser(0,10);
   c1->cd(1);
   CFSumDist[0]->DrawCopy("Surf1");
 
@@ -267,6 +268,7 @@ void dEtadPhiDist(const char *filename,const char *prefix) {
   CFSumDist[1]=(TH2F*)SESumDist[1]->Clone("Proton Lambda");
   CFSumDist[1]->Divide(MESumDist[1]);
   CFSumDist[1]->SetTitle("p-#Lambda #oplus #bar{p}-#bar{#Lambda}");
+  CFSumDist[1]->GetZaxis()->SetRangeUser(0,10);
   c1->cd(2);
   CFSumDist[1]->DrawCopy("Surf1");
 
@@ -278,6 +280,7 @@ void dEtadPhiDist(const char *filename,const char *prefix) {
   CFSumDist[2]=(TH2F*)SESumDist[2]->Clone("Lambda Lambda");
   CFSumDist[2]->Divide(MESumDist[2]);
   CFSumDist[2]->SetTitle("#Lambda-#Lambda #oplus #bar{#Lambda}-#bar{#Lambda}");
+  CFSumDist[2]->GetZaxis()->SetRangeUser(0,10);
   c1->cd(3);
   CFSumDist[2]->DrawCopy("Surf1");
 
@@ -289,6 +292,7 @@ void dEtadPhiDist(const char *filename,const char *prefix) {
   CFSumDist[3]=(TH2F*)SESumDist[3]->Clone("Proton Xi");
   CFSumDist[3]->Divide(MESumDist[3]);
   CFSumDist[3]->SetTitle("p-#Xi #oplus #bar{p}-#bar{#Xi}");
+  CFSumDist[3]->GetZaxis()->SetRangeUser(0,10);
   c1->cd(4);
   CFSumDist[3]->DrawCopy("Surf1");
 
