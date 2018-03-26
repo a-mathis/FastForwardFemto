@@ -1,4 +1,4 @@
-void MakeItLookLikeOli(const char *fileName,const char *prefix,bool isMC) {
+void MakeItLookLikeOli(const char *fileName,const char *prefix,bool isMC,bool dcacpa) {
   TList *TPdir=new TList();
   TPdir->SetName("TPdir_0");
   TList *PIDdir=new TList();
@@ -84,22 +84,25 @@ void MakeItLookLikeOli(const char *fileName,const char *prefix,bool isMC) {
     TList *TrackCuts;
     dirProtonCuts->GetObject(name,TrackCuts);
     if (TrackCuts) {
-      TH2F *dcaXYProton=(TH2F*)TrackCuts->FindObject("DCAXYPtBinningTot");
-      TH1F *projDCAXY=(TH1F*)dcaXYProton->ProjectionY("fProtonDCAxy");
-      SPdir->Add(projDCAXY);
-      //we need to trick this into a TH2F* for every pt bin
-      for (int i =0; i<20;++i) {
-        TString DCAXYOliHistName;
-        DCAXYOliHistName=Form("fProtonDCAxyDCAzPt%i",i);
-        TH2F *outputHist=new TH2F(DCAXYOliHistName.Data(),DCAXYOliHistName.Data(),500,-5,5,500,-5,5);
-        for (int iBin=1;iBin<=500;++iBin) {
-          outputHist->SetBinContent(iBin,outputHist->GetYaxis()->FindBin(0.),dcaXYProton->GetBinContent(i+1,iBin));
-        }
-        SPdir->Add(outputHist);
-        if (isMC) {
-          DCAXYOliHistName=Form("fProtonDCAxyDCAzMCCase0PtBin%i",i);
-          outputHist->SetName(DCAXYOliHistName.Data());
+      if (dcacpa) {
+        TH2F *dcaXYProton=(TH2F*)TrackCuts->FindObject("DCAXYPtBinningTot");
+        TH1F *projDCAXY=(TH1F*)dcaXYProton->ProjectionY("fProtonDCAxy");
+        SPdir->Add(projDCAXY);
+
+        //we need to trick this into a TH2F* for every pt bin
+        for (int i =0; i<20;++i) {
+          TString DCAXYOliHistName;
+          DCAXYOliHistName=Form("fProtonDCAxyDCAzPt%i",i);
+          TH2F *outputHist=new TH2F(DCAXYOliHistName.Data(),DCAXYOliHistName.Data(),500,-5,5,500,-5,5);
+          for (int iBin=1;iBin<=500;++iBin) {
+            outputHist->SetBinContent(iBin,outputHist->GetYaxis()->FindBin(0.),dcaXYProton->GetBinContent(i+1,iBin));
+          }
           SPdir->Add(outputHist);
+          if (isMC) {
+            DCAXYOliHistName=Form("fProtonDCAxyDCAzMCCase0PtBin%i",i);
+            outputHist->SetName(DCAXYOliHistName.Data());
+            SPdir->Add(outputHist);
+          }
         }
       }
       TList *after=(TList*)TrackCuts->FindObject("after");
@@ -148,16 +151,18 @@ void MakeItLookLikeOli(const char *fileName,const char *prefix,bool isMC) {
     TList *AntiTrackCuts;
     dirAntiProtonCuts->GetObject(name,AntiTrackCuts);
     if (AntiTrackCuts) {
-      TH2F *dcaXYProton=(TH2F*)AntiTrackCuts->FindObject("DCAXYPtBinningTot");
-      TH1F *projDCAXY=(TH1F*)dcaXYProton->ProjectionY("fAntiProtonDCAxy");
-      SPdir->Add(projDCAXY);
-      //we need to trick this into a TH2F* for every pt bin
-      for (int i =0; i<20;++i) {
-        TString DCAXYOliHistName=Form("fAntiProtonDCAxyDCAzPt%i",i);
-        TH2F *outputHist=new TH2F(DCAXYOliHistName.Data(),DCAXYOliHistName.Data(),500,-5,5,500,-5,5);
-        for (int iBin=1;iBin<=500;++iBin) {
-          outputHist->SetBinContent(iBin,outputHist->GetYaxis()->FindBin(0.),dcaXYProton->GetBinContent(i+1,iBin));
-          SPdir->Add(outputHist);
+      if (dcacpa) {
+        TH2F *dcaXYProton=(TH2F*)AntiTrackCuts->FindObject("DCAXYPtBinningTot");
+        TH1F *projDCAXY=(TH1F*)dcaXYProton->ProjectionY("fAntiProtonDCAxy");
+        SPdir->Add(projDCAXY);
+        //we need to trick this into a TH2F* for every pt bin
+        for (int i =0; i<20;++i) {
+          TString DCAXYOliHistName=Form("fAntiProtonDCAxyDCAzPt%i",i);
+          TH2F *outputHist=new TH2F(DCAXYOliHistName.Data(),DCAXYOliHistName.Data(),500,-5,5,500,-5,5);
+          for (int iBin=1;iBin<=500;++iBin) {
+            outputHist->SetBinContent(iBin,outputHist->GetYaxis()->FindBin(0.),dcaXYProton->GetBinContent(i+1,iBin));
+            SPdir->Add(outputHist);
+          }
         }
       }
       TList *after=(TList*)AntiTrackCuts->FindObject("after");
@@ -228,10 +233,11 @@ void MakeItLookLikeOli(const char *fileName,const char *prefix,bool isMC) {
                                     InvMassKaon->GetXaxis()->GetBinCenter(InvMassKaon->GetNbinsX()));
 
         SPdir->Add(fakeRejKaon);
-
-        TH2F* CPALamDataTot=(TH2F*)v0Cuts->FindObject("CPAPtBinsTot");
-        for (int i=0;i<CPALamDataTot->GetXaxis()->GetNbins();++i) {
-          SPdir->Add(CPALamDataTot->ProjectionY(Form("fLambdaCPAPtBin%i",i),i+1,i+2));
+        if (dcacpa) {
+          TH2F* CPALamDataTot=(TH2F*)v0Cuts->FindObject("CPAPtBinsTot");
+          for (int i=0;i<CPALamDataTot->GetXaxis()->GetNbins();++i) {
+            SPdir->Add(CPALamDataTot->ProjectionY(Form("fLambdaCPAPtBin%i",i),i+1,i+2));
+          }
         }
         TList *after=(TList*)v0Cuts->FindObject("after");
         if (after) {
@@ -379,42 +385,43 @@ void MakeItLookLikeOli(const char *fileName,const char *prefix,bool isMC) {
         TH1F *CorrIDed=(TH1F*)mcTrkCuts->FindObject("CorrParPt");
         CorrIDed->SetName("fProtonsCorrectlyIdentified");
         PIDdir->Add(CorrIDed);
+        if (dcacpa) {
+          TList *DCAPtBinning=(TList*)mcTrkCuts->FindObject("DCAPtBinning");
+          if (DCAPtBinning) {
+            TH2F *dcaXYProtonPri=(TH2F*)DCAPtBinning->FindObject("DCAPtBinningPri");
+            TH2F *dcaXYProtonMat=(TH2F*)DCAPtBinning->FindObject("DCAPtBinningMat");
+            TH2F *dcaXYProtonSec=(TH2F*)DCAPtBinning->FindObject("DCAPtBinningSec");
+            TH2F *dcaXYProtonSecLam=(TH2F*)DCAPtBinning->FindObject("DCAPtBinningSecLam");
+            TH2F *dcaXYProtonSecSig=(TH2F*)DCAPtBinning->FindObject("DCAPtBinningSecSig");
+            //we need to trick this into a TH2F* for every pt bin
+            for (int i =0; i<20;++i) {
+              TString DCAXYOliHistNameCasePri=Form("fProtonDCAxyDCAzMCCase1PtBin%i",i);
+              TString DCAXYOliHistNameCaseSec=Form("fProtonDCAxyDCAzMCCase2PtBin%i",i);
+              TString DCAXYOliHistNameCaseMat=Form("fProtonDCAxyDCAzMCCase3PtBin%i",i);
+              TString DCAXYOliHistNameCaseSecLam=Form("fProtonDCAxyDCAzMCPtBinLambdaPtBin%i",i);
+              TString DCAXYOliHistNameCaseSecSig=Form("fProtonDCAxyDCAzMCPtBinSigmaPtBin%i",i);
 
-        TList *DCAPtBinning=(TList*)mcTrkCuts->FindObject("DCAPtBinning");
-        if (DCAPtBinning) {
-          TH2F *dcaXYProtonPri=(TH2F*)DCAPtBinning->FindObject("DCAPtBinningPri");
-          TH2F *dcaXYProtonMat=(TH2F*)DCAPtBinning->FindObject("DCAPtBinningMat");
-          TH2F *dcaXYProtonSec=(TH2F*)DCAPtBinning->FindObject("DCAPtBinningSec");
-          TH2F *dcaXYProtonSecLam=(TH2F*)DCAPtBinning->FindObject("DCAPtBinningSecLam");
-          TH2F *dcaXYProtonSecSig=(TH2F*)DCAPtBinning->FindObject("DCAPtBinningSecSig");
-          //we need to trick this into a TH2F* for every pt bin
-          for (int i =0; i<20;++i) {
-            TString DCAXYOliHistNameCasePri=Form("fProtonDCAxyDCAzMCCase1PtBin%i",i);
-            TString DCAXYOliHistNameCaseSec=Form("fProtonDCAxyDCAzMCCase2PtBin%i",i);
-            TString DCAXYOliHistNameCaseMat=Form("fProtonDCAxyDCAzMCCase3PtBin%i",i);
-            TString DCAXYOliHistNameCaseSecLam=Form("fProtonDCAxyDCAzMCPtBinLambdaPtBin%i",i);
-            TString DCAXYOliHistNameCaseSecSig=Form("fProtonDCAxyDCAzMCPtBinSigmaPtBin%i",i);
-
-            TH2F *outputHistPri=new TH2F(DCAXYOliHistNameCasePri.Data(),DCAXYOliHistNameCasePri.Data(),500,-5,5,500,-5,5);
-            TH2F *outputHistSec=new TH2F(DCAXYOliHistNameCaseSec.Data(),DCAXYOliHistNameCaseSec.Data(),500,-5,5,500,-5,5);
-            TH2F *outputHistMat=new TH2F(DCAXYOliHistNameCaseMat.Data(),DCAXYOliHistNameCaseMat.Data(),500,-5,5,500,-5,5);
-            TH2F *outputHistSecLam=new TH2F(DCAXYOliHistNameCaseSecLam.Data(),DCAXYOliHistNameCaseSecLam.Data(),500,-5,5,500,-5,5);
-            TH2F *outputHistSecSig=new TH2F(DCAXYOliHistNameCaseSecSig.Data(),DCAXYOliHistNameCaseSecSig.Data(),500,-5,5,500,-5,5);
-            for (int iBin=1;iBin<=500;++iBin) {
-              outputHistPri->SetBinContent(iBin,outputHistPri->GetYaxis()->FindBin(0.),dcaXYProtonPri->GetBinContent(i+1,iBin));
-              outputHistSec->SetBinContent(iBin,dcaXYProtonSec->GetYaxis()->FindBin(0.),dcaXYProtonSec->GetBinContent(i+1,iBin));
-              outputHistMat->SetBinContent(iBin,outputHistMat->GetYaxis()->FindBin(0.),dcaXYProtonMat->GetBinContent(i+1,iBin));
-              outputHistSecLam->SetBinContent(iBin,outputHistSecLam->GetYaxis()->FindBin(0.),dcaXYProtonSecLam->GetBinContent(i+1,iBin));
-              outputHistSecSig->SetBinContent(iBin,outputHistSecSig->GetYaxis()->FindBin(0.),dcaXYProtonSecSig->GetBinContent(i+1,iBin));
+              TH2F *outputHistPri=new TH2F(DCAXYOliHistNameCasePri.Data(),DCAXYOliHistNameCasePri.Data(),500,-5,5,500,-5,5);
+              TH2F *outputHistSec=new TH2F(DCAXYOliHistNameCaseSec.Data(),DCAXYOliHistNameCaseSec.Data(),500,-5,5,500,-5,5);
+              TH2F *outputHistMat=new TH2F(DCAXYOliHistNameCaseMat.Data(),DCAXYOliHistNameCaseMat.Data(),500,-5,5,500,-5,5);
+              TH2F *outputHistSecLam=new TH2F(DCAXYOliHistNameCaseSecLam.Data(),DCAXYOliHistNameCaseSecLam.Data(),500,-5,5,500,-5,5);
+              TH2F *outputHistSecSig=new TH2F(DCAXYOliHistNameCaseSecSig.Data(),DCAXYOliHistNameCaseSecSig.Data(),500,-5,5,500,-5,5);
+              for (int iBin=1;iBin<=500;++iBin) {
+                outputHistPri->SetBinContent(iBin,outputHistPri->GetYaxis()->FindBin(0.),dcaXYProtonPri->GetBinContent(i+1,iBin));
+                outputHistSec->SetBinContent(iBin,dcaXYProtonSec->GetYaxis()->FindBin(0.),dcaXYProtonSec->GetBinContent(i+1,iBin));
+                outputHistMat->SetBinContent(iBin,outputHistMat->GetYaxis()->FindBin(0.),dcaXYProtonMat->GetBinContent(i+1,iBin));
+                outputHistSecLam->SetBinContent(iBin,outputHistSecLam->GetYaxis()->FindBin(0.),dcaXYProtonSecLam->GetBinContent(i+1,iBin));
+                outputHistSecSig->SetBinContent(iBin,outputHistSecSig->GetYaxis()->FindBin(0.),dcaXYProtonSecSig->GetBinContent(i+1,iBin));
+              }
+              SPdir->Add(outputHistPri);
+              SPdir->Add(outputHistSec);
+              SPdir->Add(outputHistMat);
+              SPdir->Add(outputHistSecLam);
+              SPdir->Add(outputHistSecSig);
             }
-            SPdir->Add(outputHistPri);
-            SPdir->Add(outputHistSec);
-            SPdir->Add(outputHistMat);
-            SPdir->Add(outputHistSecLam);
-            SPdir->Add(outputHistSecSig);
+          } else {
+            std::cout << "No DCAPtBinning \n";
           }
-        } else {
-          std::cout << "No DCAPtBinning \n";
         }
       }
     }
@@ -435,30 +442,32 @@ void MakeItLookLikeOli(const char *fileName,const char *prefix,bool isMC) {
       } else {
         TList *v0MC=(TList*)mcv0Cuts->FindObject("v0MonteCarlo");
         if (v0MC) {
-          TList *CPAPtBinning=(TList*)v0MC->FindObject("CPAPtBinning");
-          if (CPAPtBinning) {
-            TH2F *CPALamPri=(TH2F*)CPAPtBinning->FindObject("CPAPtBinningPri");
-            TH2F *CPALamMat=(TH2F*)CPAPtBinning->FindObject("CPAPtBinningMat");
-            TH2F *CPALamSec=(TH2F*)CPAPtBinning->FindObject("CPAPtBinningSec");
-            TH2F *CPALamCont=(TH2F*)CPAPtBinning->FindObject("CPAPtBinningCont");
+          if (dcacpa) {
+            TList *CPAPtBinning=(TList*)v0MC->FindObject("CPAPtBinning");
+            if (CPAPtBinning) {
+              TH2F *CPALamPri=(TH2F*)CPAPtBinning->FindObject("CPAPtBinningPri");
+              TH2F *CPALamMat=(TH2F*)CPAPtBinning->FindObject("CPAPtBinningMat");
+              TH2F *CPALamSec=(TH2F*)CPAPtBinning->FindObject("CPAPtBinningSec");
+              TH2F *CPALamCont=(TH2F*)CPAPtBinning->FindObject("CPAPtBinningCont");
 
-            for (int iBins=0;iBins<CPALamPri->GetXaxis()->GetNbins();++iBins) {
-              TString PriName=Form("fLambdaCPAPrimaryPtBin%i",iBins);
-              TH1F *CPALamPriPt=(TH1F*)CPALamPri->ProjectionY(PriName.Data(),iBins+1,iBins+2);
-              SPdir->Add(CPALamPriPt);
-              TString SecName=Form("fLambdaCPASecondaryPtBin%i",iBins);
-              TH1F *CPALamSecPt=(TH1F*)CPALamMat->ProjectionY(SecName.Data(),iBins+1,iBins+2);
-              SPdir->Add(CPALamSecPt);
-              TString MatName=Form("fLambdaCPAMaterialPtBin%i",iBins);
-              TH1F *CPALamMatPt=(TH1F*)CPALamSec->ProjectionY(MatName.Data(),iBins+1,iBins+2);
-              SPdir->Add(CPALamMatPt);
-              TString BkgName=Form("fLambdaCPABkgPtBin%i",iBins);
-              TH1F *CPALamBkgPt=(TH1F*)CPALamCont->ProjectionY(BkgName.Data(),iBins+1,iBins+2);
-              SPdir->Add(CPALamBkgPt);
+              for (int iBins=0;iBins<CPALamPri->GetXaxis()->GetNbins();++iBins) {
+                TString PriName=Form("fLambdaCPAPrimaryPtBin%i",iBins);
+                TH1F *CPALamPriPt=(TH1F*)CPALamPri->ProjectionY(PriName.Data(),iBins+1,iBins+2);
+                SPdir->Add(CPALamPriPt);
+                TString SecName=Form("fLambdaCPASecondaryPtBin%i",iBins);
+                TH1F *CPALamSecPt=(TH1F*)CPALamMat->ProjectionY(SecName.Data(),iBins+1,iBins+2);
+                SPdir->Add(CPALamSecPt);
+                TString MatName=Form("fLambdaCPAMaterialPtBin%i",iBins);
+                TH1F *CPALamMatPt=(TH1F*)CPALamSec->ProjectionY(MatName.Data(),iBins+1,iBins+2);
+                SPdir->Add(CPALamMatPt);
+                TString BkgName=Form("fLambdaCPABkgPtBin%i",iBins);
+                TH1F *CPALamBkgPt=(TH1F*)CPALamCont->ProjectionY(BkgName.Data(),iBins+1,iBins+2);
+                SPdir->Add(CPALamBkgPt);
+              }
+
+            } else {
+              std::cout << "No CPA PtBinning \n";
             }
-
-          } else {
-            std::cout << "No CPA PtBinning \n";
           }
         } else {
           std::cout << "No v0MC \n";
