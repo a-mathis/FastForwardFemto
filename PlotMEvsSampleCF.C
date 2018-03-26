@@ -71,14 +71,19 @@ void SetStyleHisto(TH1 *histo, int marker, int color)
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-TH1F* Calculate_CF(TH1F* histRE_relK,TH1F* histME_relK, TString CFname,Double_t normleft,Double_t normright)
+TH1F* Calculate_CF(TH1F* histRE_relK,TH1F* histME_relK, TString CFname,Double_t normleft,Double_t normright, const char* folder, float spinningDepth)
 {
   histRE_relK->Sumw2();
   histME_relK->Sumw2();
-  Double_t norm_relK = histRE_relK->Integral(histRE_relK->FindBin(normleft),histRE_relK->FindBin(normright)) / histME_relK->Integral(histME_relK->FindBin(normleft),histME_relK->FindBin(normright));
-
   TH1F* Hist_CF = (TH1F*)histRE_relK->Clone(CFname.Data());
-  Hist_CF->Divide(histRE_relK,histME_relK,1,norm_relK);
+  if(strcmp(folder, "") == 0) {
+    Double_t norm_relK = histRE_relK->Integral(histRE_relK->FindBin(normleft),histRE_relK->FindBin(normright)) / histME_relK->Integral(histME_relK->FindBin(normleft),histME_relK->FindBin(normright));
+    Hist_CF->Divide(histRE_relK,histME_relK,1,norm_relK);
+  }
+  else {
+    histME_relK->Scale(1.f/spinningDepth);
+    Hist_CF->Divide(histRE_relK,histME_relK);
+  }
 
   return Hist_CF;
 }
@@ -236,7 +241,7 @@ void PlotMEvsSampleCF(const char *filename,const char *prefix) {
               std::cout << SEName.Data() << " not Found\n";
             }
             TString CFName = Form("CF_Part%i_Part%i",iPart1,iPart2);
-            CFSampleDist[iPart1][iPart2]=Calculate_CF(SESampleDist[iPart1][iPart2],MESampleDist[iPart1][iPart2],CFName.Data(),normleft,normright);
+            CFSampleDist[iPart1][iPart2]=Calculate_CF(SESampleDist[iPart1][iPart2],MESampleDist[iPart1][iPart2],CFName.Data(),normleft,normright,"SAMPLE",10);
           }
         }
       }
@@ -287,7 +292,7 @@ void PlotMEvsSampleCF(const char *filename,const char *prefix) {
               std::cout << SEName.Data() << " not Found\n";
             }
             TString CFName = Form("CF_Part%i_Part%i",iPart1,iPart2);
-            CFDist[iPart1][iPart2]=Calculate_CF(SEDist[iPart1][iPart2],MEDist[iPart1][iPart2],CFName.Data(),normleft,normright);
+            CFDist[iPart1][iPart2]=Calculate_CF(SEDist[iPart1][iPart2],MEDist[iPart1][iPart2],CFName.Data(),normleft,normright,"",0);
           }
         }
       }
