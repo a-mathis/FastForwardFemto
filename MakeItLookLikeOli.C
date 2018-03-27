@@ -492,13 +492,14 @@ void MakeItLookLikeOli(const char *fileName,const char *prefix,bool isMC,bool dc
 
   //for the systematics:
   if (!isMC) {
+    std::cout << "Extracting Systematics \n";
     for (int i=1;i<=30;++i) {
       TString dirName=Form("PWGCF_PLFemto_%i",i);
       TDirectoryFile* sysdirOutput=new TDirectoryFile(dirName.Data(),dirName.Data());
 
       TList *sysTPList=new TList();
       sysTPList->SetName(Form("TPdir_%i",i));
-      TString resultsName=Form("Results_%i",i);
+      TString resultsName=Form("%sResults%i",prefix,i);
       TDirectoryFile *sysdirResults=(TDirectoryFile*)(file->FindObjectAny(resultsName.Data()));
       if (sysdirResults) {
         TList *tmp=sysdirResults->GetListOfKeys();
@@ -540,7 +541,10 @@ void MakeItLookLikeOli(const char *fileName,const char *prefix,bool isMC,bool dc
             }
           }
         }
+      } else {
+        std::cout << resultsName.Data() << "No sys dir Results \n";
       }
+
       sysdirOutput->Add(sysTPList);
       sysdirOutput->Write("PWGCF_PLFemto_0",TObject::kSingleKey);
     }
