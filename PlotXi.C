@@ -68,8 +68,8 @@ void SetStyle(bool graypalette, bool title)
   gStyle->SetPadColor(10);
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
-//  gStyle->SetPadBottomMargin(0.15);
-//  gStyle->SetPadLeftMargin(0.15);
+  //  gStyle->SetPadBottomMargin(0.15);
+  //  gStyle->SetPadLeftMargin(0.15);
   gStyle->SetPadBottomMargin(0.16);
   gStyle->SetPadLeftMargin(0.15);
   gStyle->SetHistLineWidth(1);
@@ -102,7 +102,7 @@ void SetStyleHisto(TH1 *histo, int marker, int color)
   histo->GetXaxis()->SetLabelFont(42);
   histo->GetYaxis()->SetLabelSize(0.045);
   histo->GetYaxis()->SetTitleSize(0.05);
-  histo->GetYaxis()->SetLabelOffset(0.01);
+  histo->GetYaxis()->SetLabelOffset(0.02);
   histo->GetYaxis()->SetTitleOffset(1.2);
   histo->SetMarkerStyle(20);
   histo->SetMarkerColor(color);
@@ -154,10 +154,10 @@ void FitLambda(TH1F* histo, float &signal, float
 
   // Extract signal as integral
   signal = fSignalGauss->Integral(lowerBound, upperBound)
-            /double(histo->GetBinWidth(1));
+                /double(histo->GetBinWidth(1));
   signalErr = fSignalGauss->IntegralError(lowerBound, upperBound,
                                           r->GetParams(), r->GetCovarianceMatrix().GetMatrixArray())
-            /double(histo->GetBinWidth(1));
+                /double(histo->GetBinWidth(1));
 
   TF1 *fLambda = new TF1("fLambda", "fBackground2 + fSignalGauss", 1.25,
                          1.4);
@@ -180,11 +180,11 @@ void FitLambda(TH1F* histo, float &signal, float
   fLambda_background->SetLineColor(fColors[2]);
 
   background = fLambda_background->Integral(lowerBound, upperBound)
-            /double(histo->GetBinWidth(1));
+                /double(histo->GetBinWidth(1));
   backgroundErr = fLambda_background->IntegralError(lowerBound,
                                                     upperBound, backgroundR->GetParams(),
                                                     backgroundR->GetCovarianceMatrix().GetMatrixArray())
-            /double(histo->GetBinWidth(1));
+                /double(histo->GetBinWidth(1));
 
   histo->GetListOfFunctions()->Add(fLambda_background);
 
@@ -194,19 +194,22 @@ void FitLambda(TH1F* histo, float &signal, float
 }
 
 
-void PlotXi(TString fileName) {
+void PlotXi(TString fileName, const char *prefix) {
   SetStyle(false,false);
-  TH1F* xiPt[9];
+  TH1F* xiPt[13];
 
   TH2F* xiMass2D;
   TH1F* xiMass;
   TFile *file=TFile::Open(fileName.Data());
   //  file->ls();
-  TDirectoryFile *dirExp=(TDirectoryFile*)(file->FindObjectAny("CascadeCuts"));
+  TString dirName="";
+  dirName+=prefix;
+  dirName+="CascadeCuts";
+  TDirectoryFile *dirExp=(TDirectoryFile*)(file->FindObjectAny(dirName.Data()));
   TCanvas *Xi= new TCanvas("Xi","Xi",0,0,1500,1100);
   TCanvas *PtXi= new TCanvas("PtXi","PtXi",0,0,1500,1100);
   TH1F *Purity=0;
-  PtXi->Divide(3,3);
+  PtXi->Divide(4,4);
   if (dirExp) {
     TList *tmp=dirExp->GetListOfKeys();
     TString name=tmp->At(0)->GetName();
@@ -222,63 +225,57 @@ void PlotXi(TString fileName) {
     }
     xiMass2D=(TH2F*)Cascade->FindObject("InvMassXiPt");
     xiMass=(TH1F*)xiMass2D->ProjectionY("InvMassXi");
-    Purity=new TH1F("Purity","Purity",10,xiMass2D->GetXaxis()->GetBinLowEdge(1),xiMass2D->GetXaxis()->GetBinUpEdge(21));
+    Purity=new TH1F("Purity","Purity",13,xiMass2D->GetXaxis()->GetBinLowEdge(1),xiMass2D->GetXaxis()->GetBinUpEdge(13));
     std::cout << xiMass2D->GetXaxis()->GetBinLowEdge(1) << '\t' << xiMass2D->GetXaxis()->GetBinUpEdge(21);
-    for (int iBin = 0; iBin<9; ++iBin) {
-      PtXi->cd(1+iBin);
+    for (int iBin = 0; iBin<13; ++iBin) {
+      TPad *padPt=(TPad*)PtXi->cd(1+iBin);
+      padPt->SetRightMargin(0.0);
+      padPt->SetTopMargin(0.005);
+      padPt->SetBottomMargin(0.15);
+      padPt->SetLeftMargin(0.05);
+      padPt->Draw();
       TString XiNamePt=Form("XiPt_%i",iBin);
-      std::cout << 2*iBin+1 << '\t' << 2*iBin+2 << std::endl;
-      xiPt[iBin]=(TH1F*)xiMass2D->ProjectionY(XiNamePt.Data(),2*iBin+1,2*iBin+2);
+      xiPt[iBin]=(TH1F*)xiMass2D->ProjectionY(XiNamePt.Data(),iBin+1,iBin+2);
 
-      SetStyleHisto(xiPt[iBin],20,1);
-      std::cout << Form("%2.2f < p_{T} < %2.2f",xiMass2D->GetXaxis()->GetBinLowEdge(2*iBin+1),xiMass2D->GetXaxis()->GetBinUpEdge(2*iBin+2)) << std::endl;
+      SetStyleHisto(xiPt[iBin],2,1);
       xiPt[iBin]->GetXaxis()->SetRangeUser(1.285,1.345);
-      xiPt[iBin]->GetXaxis()->SetTitle("IM_{#pi#Lambda} (GeV/#it{c}^{2})");
+      xiPt[iBin]->GetXaxis()->SetTitle("M_{#pi#Lambda} (GeV/#it{c}^{2})");
       float signal=0;
       float signalErr=0;
       float background=0;
       float backgroundErr=0;
       float lowerBound=1.322-0.005;
       float upperBound=1.322+0.005;
-      if (iBin > 0) {
-        //  xiMass->DrawCopy();
-        //  SetStyle(false,false);
-        FitLambda(xiPt[iBin], signal, signalErr, background, backgroundErr, lowerBound,upperBound);
+      //  xiMass->DrawCopy();
+      //  SetStyle(false,false);
+      FitLambda(xiPt[iBin], signal, signalErr, background, backgroundErr, lowerBound,upperBound);
 
-        TList *funListLambda = xiPt[iBin]->GetListOfFunctions();
-        TF1 *fLambdaTotal = (TF1*)funListLambda->FindObject("fLambda");
+      TList *funListLambda = xiPt[iBin]->GetListOfFunctions();
+      TF1 *fLambdaTotal = (TF1*)funListLambda->FindObject("fLambda");
 
-        float amp1 = fLambdaTotal->GetParameter(3);
-        float amp2 = fLambdaTotal->GetParameter(6);
-        float mean1 = fLambdaTotal->GetParameter(4);
-        float mean2 = fLambdaTotal->GetParameter(7);
-        float width1 = fLambdaTotal->GetParameter(5);
-        float width2 = fLambdaTotal->GetParameter(8);
+      float amp1 = fLambdaTotal->GetParameter(3);
+      float amp2 = fLambdaTotal->GetParameter(6);
+      float mean1 = fLambdaTotal->GetParameter(4);
+      float mean2 = fLambdaTotal->GetParameter(7);
+      float width1 = fLambdaTotal->GetParameter(5);
+      float width2 = fLambdaTotal->GetParameter(8);
 
-        float meanMass = weightedMean(amp1, mean1, amp2, mean2);
-        float meanWidth = weightedMean(amp1, width1, amp2, width2);
+      float meanMass = weightedMean(amp1, mean1, amp2, mean2);
+      float meanWidth = weightedMean(amp1, width1, amp2, width2);
 
-        TLatex LambdaLabel;
-        LambdaLabel.SetNDC(kTRUE);
-        LambdaLabel.SetTextSize(gStyle->GetTextSize()*0.8);
-        LambdaLabel.DrawLatex(gPad->GetUxmax()-0.8, gPad->GetUymax()-0.39,
-                              Form("#splitline{#splitline{#splitline{#splitline{%.2f < p_{T} < %.2f}{#Xi^{-}: %.0f}}{m_{#Xi} = %.1fMeV/#it{c}^{2}}}{#sigma_{#Xi}= %.1fMeV/#it{c}^{2}}}{Purity = %.1f %%}",
-                                   xiMass2D->GetXaxis()->GetBinLowEdge(2*iBin+1),xiMass2D->GetXaxis()->GetBinUpEdge(2*iBin+2),
-                                   signal, meanMass*1000.f, meanWidth*1000.f,
-                                   signal/(signal+background)*100.f));//#splitline{#splitline{
-        Purity->SetBinContent(iBin+1,signal/(signal+background)*100.f);
-      } else {
-        xiPt[iBin]->DrawCopy();
-        TLatex LambdaLabel;
-        LambdaLabel.SetNDC(kTRUE);
-        LambdaLabel.SetTextSize(gStyle->GetTextSize()*0.8);
-        LambdaLabel.DrawLatex(gPad->GetUxmax()-0.8, gPad->GetUymax()-0.39,
-                              Form("%.2f < p_{T} < %.2f",xiMass2D->GetXaxis()->GetBinLowEdge(2*iBin+1),xiMass2D->GetXaxis()->GetBinUpEdge(2*iBin+2)));
-      }
+      TLatex LambdaLabel;
+      LambdaLabel.SetNDC(kTRUE);
+      LambdaLabel.SetTextSize(gStyle->GetTextSize()*1.2);
+      LambdaLabel.DrawLatex(gPad->GetUxmax()-0.8, gPad->GetUymax()-0.39,
+                            Form("#splitline{#splitline{#splitline{#splitline{%.2f < p_{T} < %.2f}{#Xi^{-}: %.0f}}{m_{#Xi} = %.1fMeV/#it{c}^{2}}}{#sigma_{#Xi}= %.1fMeV/#it{c}^{2}}}{Purity = %.1f %%}",
+                                 xiMass2D->GetXaxis()->GetBinCenter(iBin+1),xiMass2D->GetXaxis()->GetBinCenter(iBin+2),
+                                 signal, meanMass*1000.f, meanWidth*1000.f,
+                                 signal/(signal+background)*100.f));//#splitline{#splitline{
+      Purity->SetBinContent(iBin+1,signal/(signal+background)*100.f);
     }
     SetStyleHisto(xiMass,20,1);
     xiMass->GetXaxis()->SetRangeUser(1.285,1.345);
-    xiMass->GetXaxis()->SetTitle("IM_{#pi#Lambda} (GeV/#it{c}^{2})");
+    xiMass->GetXaxis()->SetTitle("M_{#pi#Lambda} (GeV/#it{c}^{2})");
     if (!xiMass) {
       std::cout << "Missing Hist" << std::endl;
     }
@@ -322,23 +319,23 @@ void PlotXi(TString fileName) {
   BeamTextLambda.SetNDC(kTRUE);
   BeamTextLambda.DrawLatex(gPad->GetUxmax()-0.8, gPad->GetUymax()-0.2,
                            "p-p (2017) #sqrt{#it{s}} = 13 TeV");
-//  TH1F *dummy=new TH1F("dummy","dummy",9,0.6,7.121051);//,10,xiMass2D->GetXaxis()->GetBinLowEdge(1),xiMass2D->GetXaxis()->GetBinUpEdge(21));
-//  dummy->GetXaxis()->SetTitle("P_{T} (GeV/#it{c})");
-//  dummy->GetYaxis()->SetTitle("Purity");
-//  dummy->GetYaxis()->SetRangeUser(80,100);
-//  dummy->SetTitle(";P;");
+  //  TH1F *dummy=new TH1F("dummy","dummy",9,0.6,7.121051);//,10,xiMass2D->GetXaxis()->GetBinLowEdge(1),xiMass2D->GetXaxis()->GetBinUpEdge(21));
+  //  dummy->GetXaxis()->SetTitle("P_{T} (GeV/#it{c})");
+  //  dummy->GetYaxis()->SetTitle("Purity");
+  //  dummy->GetYaxis()->SetRangeUser(80,100);
+  //  dummy->SetTitle(";P;");
   TCanvas *cPurity=new TCanvas("cPurity","cPurity");
   cPurity->cd();
   SetStyleHisto(Purity,21,2);
-//  Purity->SetLineColor(fColors[2]);
-//  Purity->SetMarkerColor(fColors[2]);
-//  Purity->SetMarkerStyle(20);
-//  Purity->SetMarkerSize(2);
+  //  Purity->SetLineColor(fColors[2]);
+  //  Purity->SetMarkerColor(fColors[2]);
+  //  Purity->SetMarkerStyle(20);
+  //  Purity->SetMarkerSize(2);
   Purity->GetYaxis()->SetRangeUser(80,100);
   Purity->SetTitle(";P_{T} (GeV/#it{c});Purity");
   Purity->SetStats(0);
   Purity->GetYaxis()->SetTitleOffset(1.);
   Purity->GetXaxis()->SetTitleOffset(.9);
-//  dummy->DrawCopy();
+  //  dummy->DrawCopy();
   Purity->DrawCopy("p");
 }
