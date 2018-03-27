@@ -6,7 +6,7 @@ std::vector<int> fMarkers    = {kFullCircle, kFullSquare, kOpenCircle, kOpenSqua
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SetStyle(bool graypalette=false, bool title=false)
 {
-  const int NCont = 255;
+  const int NCont = 25;
   gStyle->Reset("Plain");
   gStyle->SetNumberContours(NCont);
   gStyle->SetOptTitle(title);
@@ -14,6 +14,7 @@ void SetStyle(bool graypalette=false, bool title=false)
   gStyle->SetOptStat(0);
   if(graypalette) gStyle->SetPalette(8,0);
   else gStyle->SetPalette(1);
+  gStyle->SetMarkerSize(1);
   gStyle->SetCanvasColor(10);
   gStyle->SetCanvasBorderMode(0);
   gStyle->SetFrameLineWidth(1);
@@ -42,15 +43,15 @@ void SetStyle(bool graypalette=false, bool title=false)
   gStyle->SetLegendFillColor(kWhite);
   gStyle->SetLegendFont(42);
   gStyle->SetLegendBorderSize(0);
-
-  const int NRGBs = 6;
-  Double_t stops[NRGBs];
-  for(int i=0; i<NRGBs; ++i) stops[i] = float(i)/(NRGBs-1);
-
-  Double_t red[NRGBs]   = { 1.,  29./255., 25./255., 27./255., 32./255., 24./255.};
-  Double_t green[NRGBs] = { 1., 221./255., 160./255., 113./255., 74./255., 37./255.};
-  Double_t blue[NRGBs] = {  1., 221./255., 184./255., 154./255., 129./255., 98./255.};
-  TColor::CreateGradientColorTable(NRGBs,stops,red,green,blue,NCont);
+  gStyle->SetPalette(kRainBow);
+  //  const int NRGBs = 6;
+  //  Double_t stops[NRGBs];
+  //  for(int i=0; i<NRGBs; ++i) stops[i] = float(i)/(NRGBs-1);
+  //
+  //  Double_t red[NRGBs]   = { 1.,  29./255., 25./255., 27./255., 32./255., 24./255.};
+  //  Double_t green[NRGBs] = { 1., 221./255., 160./255., 113./255., 74./255., 37./255.};
+  //  Double_t blue[NRGBs] = {  1., 221./255., 184./255., 154./255., 129./255., 98./255.};
+  //  TColor::CreateGradientColorTable(NRGBs,stops,red,green,blue,NCont);
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -193,6 +194,8 @@ void dEtadPhiDist(const char *filename,const char *prefix) {
   SetStyle(false,true);
   const float normleft = 0.2;
   const float normright = 0.4;
+  const float lowerBoundPhi=-TMath::Pi()/3;
+  const float upperBoundPhi=5*TMath::Pi()/3;
   TFile *file=TFile::Open(filename);
 
   TString RelKNames[6]={"Proton","AntiProton","Lambda","AntiLambda","Xi","AntiXi"};
@@ -200,13 +203,17 @@ void dEtadPhiDist(const char *filename,const char *prefix) {
   ResultsName+=prefix;
   ResultsName+="Results";
 
+  TH2F *SEDistTmp[6][6];
   TH2F *SEDist[6][6];
   TH2F *SESumDist[4];
+  TH2F *MEDistTmp[6][6];
   TH2F *MEDist[6][6];
   TH2F *MESumDist[4];
   TH2F *CFDist[6][6];
+  TH1F *CFSumProjDist[4];
   TH2F *CFSumDist[4];
-
+  int rebin=3;
+  const char *draw="surf2";
   TDirectoryFile *dirResults=(TDirectoryFile*)(file->FindObjectAny(ResultsName.Data()));
   if (dirResults) {
     TList *tmp=dirResults->GetListOfKeys();
@@ -225,30 +232,58 @@ void dEtadPhiDist(const char *filename,const char *prefix) {
           } else {
             TString SEName=Form("SEdPhidEtaDist_Particle%i_Particle%i",iPart1,iPart2);
             SEDist[iPart1][iPart2]=(TH2F*)tmpFolder->FindObject(SEName.Data());
+            TString MEName=Form("MEdPhidEtaDist_Particle%i_Particle%i",iPart1,iPart2);
+            MEDist[iPart1][iPart2]=(TH2F*)tmpFolder->FindObject(MEName.Data());
+            float scaleSE=1./SEDist[iPart1][iPart2]->GetEntries();
+            float scaleME=1./MEDist[iPart1][iPart2]->GetEntries();
+            for (int iXBin=1;iXBin<SEDist[iPart1][iPart2]->GetNbinsX();++iXBin) {
+              float dEta=SEDist[iPart1][iPart2]->GetXaxis()->GetBinCenter(iXBin);
+              for (int iYBin=1;iYBin<SEDist[iPart1][iPart2]->GetNbinsY();++iYBin) {
+                float dPhi=SEDist[iPart1][iPart2]->GetYaxis()->GetBinCenter(iYBin);
+                if (dPhi<lowerBoundPhi) {
+                  int SECounts=SEDist[iPart1][iPart2]->GetBinContent(iXBin,iYBin);
+                  SEDist[iPart1][iPart2]->SetBinContent(iXBin,iYBin,0);
+                  SEDist[iPart1][iPart2]->AddBinContent(SEDist[iPart1][iPart2]->FindBin(dEta,dPhi+2*TMath::Pi()),SECounts);
+
+                  int MECounts=MEDist[iPart1][iPart2]->GetBinContent(iXBin,iYBin);
+                  MEDist[iPart1][iPart2]->SetBinContent(iXBin,iYBin,0);
+                  MEDist[iPart1][iPart2]->AddBinContent(MEDist[iPart1][iPart2]->FindBin(dEta,dPhi+2*TMath::Pi()),MECounts);
+                } else if (dPhi > upperBoundPhi) {
+                  int SECounts=SEDist[iPart1][iPart2]->GetBinContent(iXBin,iYBin);
+                  SEDist[iPart1][iPart2]->SetBinContent(iXBin,iYBin,0);
+                  SEDist[iPart1][iPart2]->AddBinContent(SEDist[iPart1][iPart2]->FindBin(dEta,dPhi-2*TMath::Pi()),SECounts);
+
+                  int MECounts=MEDist[iPart1][iPart2]->GetBinContent(iXBin,iYBin);
+                  MEDist[iPart1][iPart2]->SetBinContent(iXBin,iYBin,0);
+                  MEDist[iPart1][iPart2]->AddBinContent(MEDist[iPart1][iPart2]->FindBin(dEta,dPhi-2*TMath::Pi()),MECounts);
+                } else {
+                  continue;
+                }
+              }
+            }
+
             SEDist[iPart1][iPart2]->SetDirectory(0);
-            SEDist[iPart1][iPart2]->Scale(1./SEDist[iPart1][iPart2]->GetEntries());
+            SEDist[iPart1][iPart2]->Rebin2D(rebin,rebin);
+            SEDist[iPart1][iPart2]->Scale(scaleSE);
             if (!SEDist[iPart1][iPart2]) {
               std::cout << SEName.Data() << " not Found\n";
               std::cout << SEName.Data() << " not Found\n";
             }
 
-            TString MEName=Form("MEdPhidEtaDist_Particle%i_Particle%i",iPart1,iPart2);
-            MEDist[iPart1][iPart2]=(TH2F*)tmpFolder->FindObject(MEName.Data());
+            MEDist[iPart1][iPart2]->Rebin2D(rebin,rebin);
             MEDist[iPart1][iPart2]->SetDirectory(0);
-            MEDist[iPart1][iPart2]->Scale(1./MEDist[iPart1][iPart2]->GetEntries());
+            MEDist[iPart1][iPart2]->Scale(scaleME);
             if (!MEDist[iPart1][iPart2]) {
               std::cout << SEName.Data() << " not Found\n";
               std::cout << SEName.Data() << " not Found\n";
             }
-//            TString CFName = Form("CF_Part%i_Part%i",iPart1,iPart2);
-//            CFDist[iPart1][iPart2]=(TH2F*)SEDist[iPart1][iPart2]->Clone(CFName.Data());
-//            CFDist[iPart1][iPart2]->Divide(MEDist[iPart1][iPart2]);
           }
         }
       }
     }
   }
   auto *c1 = new TCanvas("dEtadPhi","dEtadPhi",2000,2000);
+
   c1->Divide(2,2);
   SESumDist[0]=(TH2F*)SEDist[0][0]->Clone("ProtonProtonSE");
   SESumDist[0]->Add(SEDist[1][1]);
@@ -257,9 +292,10 @@ void dEtadPhiDist(const char *filename,const char *prefix) {
   CFSumDist[0]=(TH2F*)SESumDist[0]->Clone("Proton Proton");
   CFSumDist[0]->Divide(MESumDist[0]);
   CFSumDist[0]->SetTitle("p-p #oplus #bar{p}-#bar{p}");
-  CFSumDist[0]->GetZaxis()->SetRangeUser(0,10);
+  CFSumDist[0]->GetXaxis()->SetRangeUser(-1.4,1.4);
+  CFSumDist[0]->GetYaxis()->SetRangeUser(.95*lowerBoundPhi,upperBoundPhi);
   c1->cd(1);
-  CFSumDist[0]->DrawCopy("Surf1");
+  CFSumDist[0]->DrawCopy(draw);
 
   SESumDist[1]=(TH2F*)SEDist[0][2]->Clone("ProtonLambdaSE");
   SESumDist[1]->Add(SEDist[1][3]);
@@ -268,9 +304,10 @@ void dEtadPhiDist(const char *filename,const char *prefix) {
   CFSumDist[1]=(TH2F*)SESumDist[1]->Clone("Proton Lambda");
   CFSumDist[1]->Divide(MESumDist[1]);
   CFSumDist[1]->SetTitle("p-#Lambda #oplus #bar{p}-#bar{#Lambda}");
-  CFSumDist[1]->GetZaxis()->SetRangeUser(0,10);
+  CFSumDist[1]->GetXaxis()->SetRangeUser(-1.4,1.4);
+  CFSumDist[1]->GetYaxis()->SetRangeUser(.95*lowerBoundPhi,upperBoundPhi);
   c1->cd(2);
-  CFSumDist[1]->DrawCopy("Surf1");
+  CFSumDist[1]->DrawCopy(draw);
 
 
   SESumDist[2]=(TH2F*)SEDist[2][2]->Clone("LambdaLambdaSE");
@@ -280,9 +317,10 @@ void dEtadPhiDist(const char *filename,const char *prefix) {
   CFSumDist[2]=(TH2F*)SESumDist[2]->Clone("Lambda Lambda");
   CFSumDist[2]->Divide(MESumDist[2]);
   CFSumDist[2]->SetTitle("#Lambda-#Lambda #oplus #bar{#Lambda}-#bar{#Lambda}");
-  CFSumDist[2]->GetZaxis()->SetRangeUser(0,10);
+  CFSumDist[2]->GetXaxis()->SetRangeUser(-1.4,1.4);
+  CFSumDist[2]->GetYaxis()->SetRangeUser(.95*lowerBoundPhi,upperBoundPhi);
   c1->cd(3);
-  CFSumDist[2]->DrawCopy("Surf1");
+  CFSumDist[2]->DrawCopy(draw);
 
 
   SESumDist[3]=(TH2F*)SEDist[0][4]->Clone("ProtonXiSE");
@@ -292,9 +330,47 @@ void dEtadPhiDist(const char *filename,const char *prefix) {
   CFSumDist[3]=(TH2F*)SESumDist[3]->Clone("Proton Xi");
   CFSumDist[3]->Divide(MESumDist[3]);
   CFSumDist[3]->SetTitle("p-#Xi #oplus #bar{p}-#bar{#Xi}");
-  CFSumDist[3]->GetZaxis()->SetRangeUser(0,10);
+  CFSumDist[3]->GetXaxis()->SetRangeUser(-1.4,1.4);
+  CFSumDist[3]->GetYaxis()->SetRangeUser(.95*lowerBoundPhi,upperBoundPhi);
   c1->cd(4);
-  CFSumDist[3]->DrawCopy("Surf1");
+  CFSumDist[3]->DrawCopy(draw);
 
+  auto *c2 = new TCanvas("dPhi","dPhi",1000,1000);
+  c2->Divide(2,2);
+  CFSumProjDist[0]=(TH1F*)(SESumDist[0]->ProjectionY("phiProtonProton",SESumDist[0]->GetXaxis()->FindBin(-1.2),SESumDist[0]->GetXaxis()->FindBin(1.2)));
+  CFSumProjDist[0]->Divide((TH1F*)(MESumDist[0]->ProjectionY("phiMEProtonProton",MESumDist[0]->GetXaxis()->FindBin(-1.2),MESumDist[0]->GetXaxis()->FindBin(1.2))));
+  CFSumProjDist[0]->SetTitle("p-p #oplus #bar{p}-#bar{p}");
+  CFSumProjDist[0]->GetYaxis()->SetTitle("#it{C}(#Delta#phi)");
+  CFSumProjDist[0]->GetXaxis()->SetRangeUser(.95*lowerBoundPhi,upperBoundPhi);
+  SetStyleHisto(CFSumProjDist[0],0,2);
+  c2->cd(1);
+  CFSumProjDist[0]->DrawCopy();
+
+  CFSumProjDist[1]=(TH1F*)(SESumDist[1]->ProjectionY("phiProtonLambda",SESumDist[1]->GetXaxis()->FindBin(-1.2),SESumDist[1]->GetXaxis()->FindBin(1.2)));
+  CFSumProjDist[1]->Divide((TH1F*)(MESumDist[1]->ProjectionY("phiMEProtonLambda",MESumDist[1]->GetXaxis()->FindBin(-1.2),MESumDist[1]->GetXaxis()->FindBin(1.2))));
+  CFSumProjDist[1]->SetTitle("p-#Lambda #oplus #bar{p}-#bar{#Lambda}");
+  CFSumProjDist[1]->GetYaxis()->SetTitle("#it{C}(#Delta#phi)");
+  CFSumProjDist[1]->GetXaxis()->SetRangeUser(.95*lowerBoundPhi,upperBoundPhi);
+  SetStyleHisto(CFSumProjDist[1],0,2);
+  c2->cd(2);
+  CFSumProjDist[1]->DrawCopy();
+
+  CFSumProjDist[2]=(TH1F*)(SESumDist[2]->ProjectionY("phiLambdaLambda",SESumDist[2]->GetXaxis()->FindBin(-1.2),SESumDist[2]->GetXaxis()->FindBin(1.2)));
+  CFSumProjDist[2]->Divide((TH1F*)(MESumDist[2]->ProjectionY("phiMELambdaLambda",MESumDist[2]->GetXaxis()->FindBin(-1.2),MESumDist[2]->GetXaxis()->FindBin(1.2))));
+  CFSumProjDist[2]->SetTitle("#Lambda-#Lambda #oplus #bar{#Lambda}-#bar{#Lambda}");
+  CFSumProjDist[2]->GetYaxis()->SetTitle("#it{C}(#Delta#phi)");
+  CFSumProjDist[2]->GetXaxis()->SetRangeUser(.95*lowerBoundPhi,upperBoundPhi);
+  SetStyleHisto(CFSumProjDist[2],0,2);
+  c2->cd(3);
+  CFSumProjDist[2]->DrawCopy();
+
+  CFSumProjDist[3]=(TH1F*)(SESumDist[3]->ProjectionY("phiProtonXi",SESumDist[3]->GetXaxis()->FindBin(-1.2),SESumDist[3]->GetXaxis()->FindBin(1.2)));
+  CFSumProjDist[3]->Divide((TH1F*)(MESumDist[3]->ProjectionY("phiMEProtonXi",MESumDist[3]->GetXaxis()->FindBin(-1.2),MESumDist[3]->GetXaxis()->FindBin(1.2))));
+  CFSumProjDist[3]->SetTitle("p-#Xi #oplus #bar{p}-#bar{#Xi}");
+  CFSumProjDist[3]->GetYaxis()->SetTitle("#it{C}(#Delta#phi)");
+  CFSumProjDist[3]->GetXaxis()->SetRangeUser(.95*lowerBoundPhi,upperBoundPhi);
+  SetStyleHisto(CFSumProjDist[3],0,2);
+  c2->cd(4);
+  CFSumProjDist[3]->DrawCopy();
 
 }
