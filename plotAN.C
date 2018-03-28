@@ -376,7 +376,6 @@ void plotAN(const char* file="~/Results/LHC17p_fast/AnalysisResults.root")
   cQAlambdaDaughter->cd(4);
   lambdaTransRadius->Draw("hist");
   cQAlambdaDaughter->Print("ANplot/LambdaDaughterQA.pdf");
-
   auto* cLambdaMass = new TCanvas();
   SetStyleHisto(lambdaInvMass, 0, 1);
   SetStyleHisto(antilambdaInvMass, 0, 1);

@@ -104,6 +104,9 @@ void MakeItLookLikeOli(const char *fileName,const char *prefix,bool isMC,bool dc
             SPdir->Add(outputHist);
           }
         }
+      } else {
+        TH1F *projDCAXY= new TH1F("fProtonDCAxy","fProtonDCAxy",10,0,10);
+        SPdir->Add(projDCAXY);
       }
       TList *after=(TList*)TrackCuts->FindObject("after");
       if (after) {
@@ -281,7 +284,7 @@ void MakeItLookLikeOli(const char *fileName,const char *prefix,bool isMC,bool dc
   }
   TString Antiv0CutsName="";
   Antiv0CutsName+=prefix;
-  Antiv0CutsName+="EvtCuts";
+  Antiv0CutsName+="Antiv0Cuts";
 
   TDirectoryFile *dirAntiv0Cuts=(TDirectoryFile*)(file->FindObjectAny(Antiv0CutsName.Data()));
   if (dirAntiv0Cuts) {
