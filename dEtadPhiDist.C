@@ -194,6 +194,8 @@ void dEtadPhiDist(const char *filename,const char *prefix) {
   SetStyle(false,true);
   const float normleft = 0.2;
   const float normright = 0.4;
+//  const float lowerBoundPhi=0;//-TMath::Pi()/3;
+//  const float upperBoundPhi=2*TMath::Pi();//5*TMath::Pi()/3;
   const float lowerBoundPhi=-TMath::Pi()/3;
   const float upperBoundPhi=5*TMath::Pi()/3;
   TFile *file=TFile::Open(filename);
@@ -231,33 +233,73 @@ void dEtadPhiDist(const char *filename,const char *prefix) {
             std::cout << folderName.Data() <<" not Found\n";
           } else {
             TString SEName=Form("SEdPhidEtaDist_Particle%i_Particle%i",iPart1,iPart2);
-            SEDist[iPart1][iPart2]=(TH2F*)tmpFolder->FindObject(SEName.Data());
+            SEDistTmp[iPart1][iPart2]=(TH2F*)tmpFolder->FindObject(SEName.Data());
+            SEName+="Refill";
+            SEDist[iPart1][iPart2]=new TH2F(
+                SEName.Data(),SEName.Data(),
+                SEDistTmp[iPart1][iPart2]->GetXaxis()->GetNbins(),
+                SEDistTmp[iPart1][iPart2]->GetXaxis()->GetBinLowEdge(1),
+                SEDistTmp[iPart1][iPart2]->GetXaxis()->GetBinUpEdge(SEDistTmp[iPart1][iPart2]->GetXaxis()->GetNbins()),
+                SEDistTmp[iPart1][iPart2]->GetYaxis()->GetNbins(),
+                SEDistTmp[iPart1][iPart2]->GetYaxis()->GetBinLowEdge(1),
+                SEDistTmp[iPart1][iPart2]->GetYaxis()->GetBinUpEdge(SEDistTmp[iPart1][iPart2]->GetYaxis()->GetNbins())
+                );
             TString MEName=Form("MEdPhidEtaDist_Particle%i_Particle%i",iPart1,iPart2);
-            MEDist[iPart1][iPart2]=(TH2F*)tmpFolder->FindObject(MEName.Data());
-            float scaleSE=1./SEDist[iPart1][iPart2]->GetEntries();
-            float scaleME=1./MEDist[iPart1][iPart2]->GetEntries();
+            MEDistTmp[iPart1][iPart2]=(TH2F*)tmpFolder->FindObject(MEName.Data());
+            MEName+="Refill";
+            MEDist[iPart1][iPart2]=new TH2F(
+                MEName.Data(),MEName.Data(),
+                MEDistTmp[iPart1][iPart2]->GetXaxis()->GetNbins(),
+                MEDistTmp[iPart1][iPart2]->GetXaxis()->GetBinLowEdge(1),
+                MEDistTmp[iPart1][iPart2]->GetXaxis()->GetBinUpEdge(MEDistTmp[iPart1][iPart2]->GetXaxis()->GetNbins()),
+                MEDistTmp[iPart1][iPart2]->GetYaxis()->GetNbins(),
+                MEDistTmp[iPart1][iPart2]->GetYaxis()->GetBinLowEdge(1),
+                MEDistTmp[iPart1][iPart2]->GetYaxis()->GetBinUpEdge(MEDistTmp[iPart1][iPart2]->GetYaxis()->GetNbins())
+                );
+            float scaleSE=1./SEDistTmp[iPart1][iPart2]->GetEntries();
+            float scaleME=1./MEDistTmp[iPart1][iPart2]->GetEntries();
             for (int iXBin=1;iXBin<SEDist[iPart1][iPart2]->GetNbinsX();++iXBin) {
               float dEta=SEDist[iPart1][iPart2]->GetXaxis()->GetBinCenter(iXBin);
               for (int iYBin=1;iYBin<SEDist[iPart1][iPart2]->GetNbinsY();++iYBin) {
                 float dPhi=SEDist[iPart1][iPart2]->GetYaxis()->GetBinCenter(iYBin);
                 if (dPhi<lowerBoundPhi) {
-                  int SECounts=SEDist[iPart1][iPart2]->GetBinContent(iXBin,iYBin);
-                  SEDist[iPart1][iPart2]->SetBinContent(iXBin,iYBin,0);
+                  int SECounts=SEDistTmp[iPart1][iPart2]->GetBinContent(iXBin,iYBin);
+                  int SEErr=SECounts;
+                  SEErr+=SEDist[iPart1][iPart2]->GetBinContent(SEDistTmp[iPart1][iPart2]->FindBin(dEta,dPhi+2*TMath::Pi()));
                   SEDist[iPart1][iPart2]->AddBinContent(SEDist[iPart1][iPart2]->FindBin(dEta,dPhi+2*TMath::Pi()),SECounts);
+                  SEDist[iPart1][iPart2]->SetBinError(SEDist[iPart1][iPart2]->FindBin(dEta,dPhi+2*TMath::Pi()),TMath::Sqrt(SEErr));
 
-                  int MECounts=MEDist[iPart1][iPart2]->GetBinContent(iXBin,iYBin);
-                  MEDist[iPart1][iPart2]->SetBinContent(iXBin,iYBin,0);
+                  int MECounts=MEDistTmp[iPart1][iPart2]->GetBinContent(iXBin,iYBin);
+                  int MEErr=MECounts;
+                  MEErr+=MEDist[iPart1][iPart2]->GetBinContent(MEDistTmp[iPart1][iPart2]->FindBin(dEta,dPhi+2*TMath::Pi()));
                   MEDist[iPart1][iPart2]->AddBinContent(MEDist[iPart1][iPart2]->FindBin(dEta,dPhi+2*TMath::Pi()),MECounts);
+                  MEDist[iPart1][iPart2]->SetBinError(MEDist[iPart1][iPart2]->FindBin(dEta,dPhi+2*TMath::Pi()),TMath::Sqrt(MEErr));
                 } else if (dPhi > upperBoundPhi) {
-                  int SECounts=SEDist[iPart1][iPart2]->GetBinContent(iXBin,iYBin);
-                  SEDist[iPart1][iPart2]->SetBinContent(iXBin,iYBin,0);
+                  int SECounts=SEDistTmp[iPart1][iPart2]->GetBinContent(iXBin,iYBin);
+                  int SEErr=SECounts;
+                  SEErr+=SEDist[iPart1][iPart2]->GetBinContent(SEDistTmp[iPart1][iPart2]->FindBin(dEta,dPhi+2*TMath::Pi()));
                   SEDist[iPart1][iPart2]->AddBinContent(SEDist[iPart1][iPart2]->FindBin(dEta,dPhi-2*TMath::Pi()),SECounts);
+                  SEDist[iPart1][iPart2]->SetBinError(SEDist[iPart1][iPart2]->FindBin(dEta,dPhi+2*TMath::Pi()),TMath::Sqrt(SEErr));
 
-                  int MECounts=MEDist[iPart1][iPart2]->GetBinContent(iXBin,iYBin);
-                  MEDist[iPart1][iPart2]->SetBinContent(iXBin,iYBin,0);
+                  int MECounts=MEDistTmp[iPart1][iPart2]->GetBinContent(iXBin,iYBin);
+                  int MEErr=MECounts;
+                  MEErr+=MEDist[iPart1][iPart2]->GetBinContent(MEDistTmp[iPart1][iPart2]->FindBin(dEta,dPhi+2*TMath::Pi()));
                   MEDist[iPart1][iPart2]->AddBinContent(MEDist[iPart1][iPart2]->FindBin(dEta,dPhi-2*TMath::Pi()),MECounts);
+                  MEDist[iPart1][iPart2]->SetBinError(MEDist[iPart1][iPart2]->FindBin(dEta,dPhi+2*TMath::Pi()),TMath::Sqrt(MEErr));
                 } else {
-                  continue;
+                  int SECounts=SEDistTmp[iPart1][iPart2]->GetBinContent(iXBin,iYBin);
+                  int SEErr=SECounts;
+                  SEErr+=SEDist[iPart1][iPart2]->GetBinContent(SEDist[iPart1][iPart2]->FindBin(dEta,dPhi));
+                  SEDist[iPart1][iPart2]->AddBinContent(SEDist[iPart1][iPart2]->FindBin(dEta,dPhi),SECounts);
+                  SEDist[iPart1][iPart2]->SetBinError(SEDist[iPart1][iPart2]->FindBin(dEta,dPhi),TMath::Sqrt(SEErr));
+
+                  int MECounts=MEDistTmp[iPart1][iPart2]->GetBinContent(iXBin,iYBin);
+                  int MEErr=MECounts;
+                  MEErr+=MEDist[iPart1][iPart2]->GetBinContent(MEDist[iPart1][iPart2]->FindBin(dEta,dPhi));
+                  MEDist[iPart1][iPart2]->AddBinContent(MEDist[iPart1][iPart2]->FindBin(dEta,dPhi),MECounts);
+                  MEDist[iPart1][iPart2]->SetBinError(MEDist[iPart1][iPart2]->FindBin(dEta,dPhi),TMath::Sqrt(MEErr));
+
+
                 }
               }
             }

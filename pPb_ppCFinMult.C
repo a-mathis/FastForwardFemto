@@ -256,7 +256,7 @@ void pPb_ppCFinMult(const char* input,const char *prefix,const char *suffix,bool
   ResultsName+=suffix;
   TString PartName[6]={"Proton","AntiProton","Lambda","AntiLambda","Xi","AntiXi"};
   int Centralities[4]={0,20,40,90};
-  int MultBins[4]={1,8,12,21};
+  int MultBins[4]={1,11,15,26};
   int iPartCounter=0;
   TDirectoryFile *dirResults=(TDirectoryFile*)(file->FindObjectAny(ResultsName.Data()));
   if (dirResults) {
@@ -408,7 +408,7 @@ void pPb_ppCFinMult(const char* input,const char *prefix,const char *suffix,bool
   TCanvas *cSumPXi=new TCanvas("CanSumPXi","CanSumPXi",0,0,1500,1100);
   auto* leg= new TLegend(0.45, 0.7, 0.95, 0.95);
   for (int iMult=0;iMult<3;++iMult) {
-    TString ppMultName = Form("kThist_CF_pp_%i",iMult);
+    TString ppMultName = Form("hist_CF_pp_Mult%i",iMult);
     hist_CF_pp_ApAp_exp[0][iMult] = Calculate_CF(SEDist[0][0][iMult],MEDist[0][0][iMult],ppMultName.Data(),normleft,normright,suffix,10);
 
     hist_Pairs[0][0]->SetBinContent(iMult+1,SEDist[0][0][iMult]->Integral(
@@ -423,9 +423,9 @@ void pPb_ppCFinMult(const char* input,const char *prefix,const char *suffix,bool
         SEDist[0][0][iMult]->FindBin(0),SEDist[0][0][iMult]->FindBin(3))+
         SEDist[1][1][iMult]->Integral(SEDist[1][1][iMult]->FindBin(0),SEDist[1][1][iMult]->FindBin(3)));
 
-    TString ApApMultName = Form("kThist_CF_ApAp_%i",iMult);
+    TString ApApMultName = Form("hist_CF_ApAp_Mult%i",iMult);
     hist_CF_pp_ApAp_exp[1][iMult] = Calculate_CF(SEDist[1][1][iMult],MEDist[1][1][iMult],ApApMultName.Data(),normleft,normright,suffix,10);
-    TString SumppApApMultName = Form("kThist_CF_pp_ApAp_exp_sum_%i",iMult);
+    TString SumppApApMultName = Form("hist_CF_pp_ApAp_exp_sum_Mult%i",iMult);
     hist_CF_pp_ApAp_exp[2][iMult] = add_CF(hist_CF_pp_ApAp_exp[0][iMult],hist_CF_pp_ApAp_exp[1][iMult],SumppApApMultName.Data());
     hist_CF_pp_ApAp_exp[2][iMult]->SetStats(0);
     hist_CF_pp_ApAp_exp[2][iMult]->GetXaxis()->SetTitleOffset(.9);
@@ -438,7 +438,7 @@ void pPb_ppCFinMult(const char* input,const char *prefix,const char *suffix,bool
 
     TPdir->Add(hist_CF_pp_ApAp_exp[2][iMult]);
 
-    TString pLMultName = Form("kThist_CF_pL_%i",iMult);
+    TString pLMultName = Form("hist_CF_pL_Mult%i",iMult);
     hist_CF_pL_ApAL_exp[0][iMult] = Calculate_CF(SEDist[0][2][iMult],MEDist[0][2][iMult],pLMultName.Data(),normleft,normright,suffix,10);
 
     hist_Pairs[1][0]->SetBinContent(iMult+1,SEDist[0][2][iMult]->Integral(
@@ -453,9 +453,9 @@ void pPb_ppCFinMult(const char* input,const char *prefix,const char *suffix,bool
         SEDist[0][2][iMult]->FindBin(0),SEDist[0][2][iMult]->FindBin(3))+
         SEDist[1][3][iMult]->Integral(SEDist[1][3][iMult]->FindBin(0),SEDist[1][3][iMult]->FindBin(3)));
 
-    TString ApALMultName = Form("kThist_CF_ApAL_%i",iMult);
+    TString ApALMultName = Form("hist_CF_ApAL_Mult%i",iMult);
     hist_CF_pL_ApAL_exp[1][iMult] = Calculate_CF(SEDist[1][3][iMult],MEDist[1][3][iMult],ApALMultName.Data(),normleft,normright,suffix,10);
-    TString SumpLApALMultName = Form("kThist_CF_pL_ApAL_exp_sum_%i",iMult);
+    TString SumpLApALMultName = Form("hist_CF_pL_ApAL_exp_sum_Mult%i",iMult);
     hist_CF_pL_ApAL_exp[2][iMult] = add_CF(hist_CF_pL_ApAL_exp[0][iMult],hist_CF_pL_ApAL_exp[1][iMult],SumpLApALMultName.Data());
     hist_CF_pL_ApAL_exp[2][iMult]->SetStats(0);
     hist_CF_pL_ApAL_exp[2][iMult]->GetXaxis()->SetTitleOffset(.9);
@@ -467,7 +467,7 @@ void pPb_ppCFinMult(const char* input,const char *prefix,const char *suffix,bool
 
     TPdir->Add(hist_CF_pL_ApAL_exp[2][iMult]);
 
-    TString LLMultName = Form("kThist_CF_LL_%i",iMult);
+    TString LLMultName = Form("hist_CF_LL_Mult%i",iMult);
     hist_CF_LL_ALAL_exp[0][iMult] = Calculate_CF(SEDist[2][2][iMult],MEDist[2][2][iMult],LLMultName.Data(),normleft,normright,suffix,10);
     hist_Pairs[2][0]->SetBinContent(iMult+1,SEDist[2][2][iMult]->Integral(
         SEDist[2][2][iMult]->FindBin(0),SEDist[2][2][iMult]->FindBin(0.2))+
@@ -481,9 +481,9 @@ void pPb_ppCFinMult(const char* input,const char *prefix,const char *suffix,bool
         SEDist[2][2][iMult]->FindBin(0),SEDist[2][2][iMult]->FindBin(3))+
         SEDist[3][3][iMult]->Integral(SEDist[3][3][iMult]->FindBin(0),SEDist[3][3][iMult]->FindBin(3)));
 
-    TString ALALMultName = Form("kThist_CF_ALAL_%i",iMult);
+    TString ALALMultName = Form("hist_CF_ALAL_Mult%i",iMult);
     hist_CF_LL_ALAL_exp[1][iMult] = Calculate_CF(SEDist[3][3][iMult],MEDist[3][3][iMult],ALALMultName.Data(),normleft,normright,suffix,10);
-    TString SumLLALALMultName = Form("kThist_CF_LL_ALAL_exp_sum_%i",iMult);
+    TString SumLLALALMultName = Form("hist_CF_LL_ALAL_exp_sum_Mult%i",iMult);
     hist_CF_LL_ALAL_exp[2][iMult] = add_CF(hist_CF_LL_ALAL_exp[0][iMult],hist_CF_LL_ALAL_exp[1][iMult],SumLLALALMultName.Data());
     hist_CF_LL_ALAL_exp[2][iMult]->SetStats(0);
     hist_CF_LL_ALAL_exp[2][iMult]->GetXaxis()->SetTitleOffset(.9);
@@ -495,7 +495,7 @@ void pPb_ppCFinMult(const char* input,const char *prefix,const char *suffix,bool
 
     TPdir->Add(hist_CF_LL_ALAL_exp[2][iMult]);
 
-    TString pXiMultName = Form("kThist_CF_pXi_%i",iMult);
+    TString pXiMultName = Form("hist_CF_pXi_Mult%i",iMult);
     hist_CF_pXi_ApAXi_exp[0][iMult] = Calculate_CF(SEDist[0][4][iMult],MEDist[0][4][iMult],pXiMultName.Data(),normleft,normright,suffix,10);
     hist_Pairs[3][0]->SetBinContent(iMult+1,SEDist[0][4][iMult]->Integral(
         SEDist[0][4][iMult]->FindBin(0),SEDist[0][4][iMult]->FindBin(0.2))+
@@ -509,9 +509,9 @@ void pPb_ppCFinMult(const char* input,const char *prefix,const char *suffix,bool
         SEDist[0][4][iMult]->FindBin(0),SEDist[0][4][iMult]->FindBin(3))+
         SEDist[1][5][iMult]->Integral(SEDist[1][5][iMult]->FindBin(0),SEDist[1][5][iMult]->FindBin(3)));
 
-    TString ApAXiMultName = Form("kThist_CF_ApAXi_%i",iMult);
+    TString ApAXiMultName = Form("hist_CF_ApAXi_Mult%i",iMult);
     hist_CF_pXi_ApAXi_exp[1][iMult] = Calculate_CF(SEDist[1][5][iMult],MEDist[1][5][iMult],ApAXiMultName.Data(),normleft,normright,suffix,10);
-    TString SumpXiApAXiMultName = Form("kThist_CF_pXi_ApAXi_exp_sum_%i",iMult);
+    TString SumpXiApAXiMultName = Form("hist_CF_pXi_ApAXi_exp_sum_Mult%i",iMult);
     hist_CF_pXi_ApAXi_exp[2][iMult] = add_CF(hist_CF_pXi_ApAXi_exp[0][iMult],hist_CF_pXi_ApAXi_exp[1][iMult],SumpXiApAXiMultName.Data());
     hist_CF_pXi_ApAXi_exp[2][iMult]->SetStats(0);
     hist_CF_pXi_ApAXi_exp[2][iMult]->GetXaxis()->SetTitleOffset(.9);
@@ -637,74 +637,74 @@ void pPb_ppCFinMult(const char* input,const char *prefix,const char *suffix,bool
     kThist_CF_pXi_ApAXi_exp[2][iBins]->SetTitle(";k* (GeV/#it{c}); #it{C}(k*)");
 
     TPdir->Add(kThist_CF_pXi_ApAXi_exp[2][iBins]);
+    if (doCent) {
+      for (int iCent=0;iCent<3;++iCent) {
+        TString ppMultCentName = Form("kTCent%ihist_CF_pp_%i",iCent,iBins);
+        kTCenthist_CF_pp_ApAp_exp[0][iBins][iCent] = Calculate_CF(SEkTCentDistBin[0][0][iCent][iBins],MEkTCentDistBin[0][0][iCent][iBins],ppMultCentName.Data(),normleft,normright,suffix,10);
+        TString ApApMultCentName = Form("kTCent%ihist_CF_ApAp_%i",iCent,iBins);
+        kTCenthist_CF_pp_ApAp_exp[1][iBins][iCent] = Calculate_CF(SEkTCentDistBin[1][1][iCent][iBins],MEkTCentDistBin[1][1][iCent][iBins],ApApMultCentName.Data(),normleft,normright,suffix,10);
+        TString SumppApApMultCentName = Form("kTCent%ihist_CF_pp_ApAp_exp_sum_%i",iCent,iBins);
+        kTCenthist_CF_pp_ApAp_exp[2][iBins][iCent] = add_CF(kTCenthist_CF_pp_ApAp_exp[0][iBins][iCent],kTCenthist_CF_pp_ApAp_exp[1][iBins][iCent],SumppApApMultCentName.Data());
+        kTCenthist_CF_pp_ApAp_exp[2][iBins][iCent]->SetStats(0);
+        kTCenthist_CF_pp_ApAp_exp[2][iBins][iCent]->GetXaxis()->SetTitleOffset(.9);
+        kTCenthist_CF_pp_ApAp_exp[2][iBins][iCent]->GetXaxis()->SetRangeUser(0,0.125);
+        kTCenthist_CF_pp_ApAp_exp[2][iBins][iCent]->GetYaxis()->SetTitleOffset(0.9);
+        kTCenthist_CF_pp_ApAp_exp[2][iBins][iCent]->SetTitle(";k* (GeV/#it{c}); #it{C}(k*)");
+        kTCenthist_CF_pp_ApAp_exp[2][iBins][iCent]->SetMarkerColor(fColors[iBins]);
+        kTCenthist_CF_pp_ApAp_exp[2][iBins][iCent]->SetLineColor(fColors[iBins]);
 
-    for (int iCent=0;iCent<3;++iCent) {
-      TString ppMultCentName = Form("kTCent%ihist_CF_pp_%i",iCent,iBins);
-      kTCenthist_CF_pp_ApAp_exp[0][iBins][iCent] = Calculate_CF(SEkTCentDistBin[0][0][iCent][iBins],MEkTCentDistBin[0][0][iCent][iBins],ppMultCentName.Data(),normleft,normright,suffix,10);
-      TString ApApMultCentName = Form("kTCent%ihist_CF_ApAp_%i",iCent,iBins);
-      kTCenthist_CF_pp_ApAp_exp[1][iBins][iCent] = Calculate_CF(SEkTCentDistBin[1][1][iCent][iBins],MEkTCentDistBin[1][1][iCent][iBins],ApApMultCentName.Data(),normleft,normright,suffix,10);
-      TString SumppApApMultCentName = Form("kTCent%ihist_CF_pp_ApAp_exp_sum_%i",iCent,iBins);
-      kTCenthist_CF_pp_ApAp_exp[2][iBins][iCent] = add_CF(kTCenthist_CF_pp_ApAp_exp[0][iBins][iCent],kTCenthist_CF_pp_ApAp_exp[1][iBins][iCent],SumppApApMultCentName.Data());
-      kTCenthist_CF_pp_ApAp_exp[2][iBins][iCent]->SetStats(0);
-      kTCenthist_CF_pp_ApAp_exp[2][iBins][iCent]->GetXaxis()->SetTitleOffset(.9);
-      kTCenthist_CF_pp_ApAp_exp[2][iBins][iCent]->GetXaxis()->SetRangeUser(0,0.125);
-      kTCenthist_CF_pp_ApAp_exp[2][iBins][iCent]->GetYaxis()->SetTitleOffset(0.9);
-      kTCenthist_CF_pp_ApAp_exp[2][iBins][iCent]->SetTitle(";k* (GeV/#it{c}); #it{C}(k*)");
-      kTCenthist_CF_pp_ApAp_exp[2][iBins][iCent]->SetMarkerColor(fColors[iBins]);
-      kTCenthist_CF_pp_ApAp_exp[2][iBins][iCent]->SetLineColor(fColors[iBins]);
+        TPdir->Add(kTCenthist_CF_pp_ApAp_exp[2][iBins][iCent]);
 
-      TPdir->Add(kTCenthist_CF_pp_ApAp_exp[2][iBins][iCent]);
+        TString pLMultCentName = Form("kTCent%ihist_CF_pL_%i",iCent,iBins);
+        kTCenthist_CF_pL_ApAL_exp[0][iBins][iCent] = Calculate_CF(SEkTCentDistBin[0][2][iBins][iCent],MEkTCentDistBin[0][2][iBins][iCent],pLMultCentName.Data(),normleft,normright,suffix,10);
+        TString ApALMultCentName = Form("kTCent%ihist_CF_ApAL_%i",iCent,iBins);
+        kTCenthist_CF_pL_ApAL_exp[1][iBins][iCent] = Calculate_CF(SEkTCentDistBin[1][3][iBins][iCent],MEkTCentDistBin[1][3][iBins][iCent],ApALMultCentName.Data(),normleft,normright,suffix,10);
+        TString SumpLApALMultCentName = Form("kTCent%ihist_CF_pL_ApAL_exp_sum_%i",iCent,iBins);
+        kTCenthist_CF_pL_ApAL_exp[2][iBins][iCent] = add_CF(kTCenthist_CF_pL_ApAL_exp[0][iBins][iCent],kTCenthist_CF_pL_ApAL_exp[1][iBins][iCent],SumpLApALMultCentName.Data());
+        kTCenthist_CF_pL_ApAL_exp[2][iBins][iCent]->SetStats(0);
+        kTCenthist_CF_pL_ApAL_exp[2][iBins][iCent]->GetXaxis()->SetTitleOffset(.9);
+        kTCenthist_CF_pL_ApAL_exp[2][iBins][iCent]->GetXaxis()->SetRangeUser(0,0.125);
+        kTCenthist_CF_pL_ApAL_exp[2][iBins][iCent]->GetYaxis()->SetTitleOffset(0.9);
+        kTCenthist_CF_pL_ApAL_exp[2][iBins][iCent]->SetMarkerColor(fColors[iBins]);
+        kTCenthist_CF_pL_ApAL_exp[2][iBins][iCent]->SetLineColor(fColors[iBins]);
+        kTCenthist_CF_pL_ApAL_exp[2][iBins][iCent]->SetTitle(";k* (GeV/#it{c}); #it{C}(k*)");
 
-      TString pLMultCentName = Form("kTCent%ihist_CF_pL_%i",iCent,iBins);
-      kTCenthist_CF_pL_ApAL_exp[0][iBins][iCent] = Calculate_CF(SEkTCentDistBin[0][2][iBins][iCent],MEkTCentDistBin[0][2][iBins][iCent],pLMultCentName.Data(),normleft,normright,suffix,10);
-      TString ApALMultCentName = Form("kTCent%ihist_CF_ApAL_%i",iCent,iBins);
-      kTCenthist_CF_pL_ApAL_exp[1][iBins][iCent] = Calculate_CF(SEkTCentDistBin[1][3][iBins][iCent],MEkTCentDistBin[1][3][iBins][iCent],ApALMultCentName.Data(),normleft,normright,suffix,10);
-      TString SumpLApALMultCentName = Form("kTCent%ihist_CF_pL_ApAL_exp_sum_%i",iCent,iBins);
-      kTCenthist_CF_pL_ApAL_exp[2][iBins][iCent] = add_CF(kTCenthist_CF_pL_ApAL_exp[0][iBins][iCent],kTCenthist_CF_pL_ApAL_exp[1][iBins][iCent],SumpLApALMultCentName.Data());
-      kTCenthist_CF_pL_ApAL_exp[2][iBins][iCent]->SetStats(0);
-      kTCenthist_CF_pL_ApAL_exp[2][iBins][iCent]->GetXaxis()->SetTitleOffset(.9);
-      kTCenthist_CF_pL_ApAL_exp[2][iBins][iCent]->GetXaxis()->SetRangeUser(0,0.125);
-      kTCenthist_CF_pL_ApAL_exp[2][iBins][iCent]->GetYaxis()->SetTitleOffset(0.9);
-      kTCenthist_CF_pL_ApAL_exp[2][iBins][iCent]->SetMarkerColor(fColors[iBins]);
-      kTCenthist_CF_pL_ApAL_exp[2][iBins][iCent]->SetLineColor(fColors[iBins]);
-      kTCenthist_CF_pL_ApAL_exp[2][iBins][iCent]->SetTitle(";k* (GeV/#it{c}); #it{C}(k*)");
+        TPdir->Add(kTCenthist_CF_pL_ApAL_exp[2][iBins][iCent]);
 
-      TPdir->Add(kTCenthist_CF_pL_ApAL_exp[2][iBins][iCent]);
+        TString LLMultCentName = Form("kTCent%ihist_CF_LL_%i",iCent,iBins);
+        kTCenthist_CF_LL_ALAL_exp[0][iBins][iCent] = Calculate_CF(SEkTCentDistBin[2][2][iCent][iBins],MEkTCentDistBin[2][2][iCent][iBins],LLMultCentName.Data(),normleft,normright,suffix,10);
+        TString ALALMultCentName = Form("kTCent%ihist_CF_ALAL_%i",iCent,iBins);
+        kTCenthist_CF_LL_ALAL_exp[1][iBins][iCent] = Calculate_CF(SEkTCentDistBin[3][3][iCent][iBins],MEkTCentDistBin[3][3][iCent][iBins],ALALMultCentName.Data(),normleft,normright,suffix,10);
+        TString SumLLALALMultCentName = Form("kTCent%ihist_CF_LL_ALAL_exp_sum_%i",iCent,iBins);
+        kTCenthist_CF_LL_ALAL_exp[2][iBins][iCent] = add_CF(kTCenthist_CF_LL_ALAL_exp[0][iBins][iCent],kTCenthist_CF_LL_ALAL_exp[1][iBins][iCent],SumLLALALMultCentName.Data());
+        kTCenthist_CF_LL_ALAL_exp[2][iBins][iCent]->SetStats(0);
+        kTCenthist_CF_LL_ALAL_exp[2][iBins][iCent]->GetXaxis()->SetTitleOffset(.9);
+        kTCenthist_CF_LL_ALAL_exp[2][iBins][iCent]->GetXaxis()->SetRangeUser(0,0.125);
+        kTCenthist_CF_LL_ALAL_exp[2][iBins][iCent]->GetYaxis()->SetTitleOffset(0.9);
+        kTCenthist_CF_LL_ALAL_exp[2][iBins][iCent]->SetMarkerColor(fColors[iBins]);
+        kTCenthist_CF_LL_ALAL_exp[2][iBins][iCent]->SetLineColor(fColors[iBins]);
+        kTCenthist_CF_LL_ALAL_exp[2][iBins][iCent]->SetTitle(";k* (GeV/#it{c}); #it{C}(k*)");
 
-      TString LLMultCentName = Form("kTCent%ihist_CF_LL_%i",iCent,iBins);
-      kTCenthist_CF_LL_ALAL_exp[0][iBins][iCent] = Calculate_CF(SEkTCentDistBin[2][2][iCent][iBins],MEkTCentDistBin[2][2][iCent][iBins],LLMultCentName.Data(),normleft,normright,suffix,10);
-      TString ALALMultCentName = Form("kTCent%ihist_CF_ALAL_%i",iCent,iBins);
-      kTCenthist_CF_LL_ALAL_exp[1][iBins][iCent] = Calculate_CF(SEkTCentDistBin[3][3][iCent][iBins],MEkTCentDistBin[3][3][iCent][iBins],ALALMultCentName.Data(),normleft,normright,suffix,10);
-      TString SumLLALALMultCentName = Form("kTCent%ihist_CF_LL_ALAL_exp_sum_%i",iCent,iBins);
-      kTCenthist_CF_LL_ALAL_exp[2][iBins][iCent] = add_CF(kTCenthist_CF_LL_ALAL_exp[0][iBins][iCent],kTCenthist_CF_LL_ALAL_exp[1][iBins][iCent],SumLLALALMultCentName.Data());
-      kTCenthist_CF_LL_ALAL_exp[2][iBins][iCent]->SetStats(0);
-      kTCenthist_CF_LL_ALAL_exp[2][iBins][iCent]->GetXaxis()->SetTitleOffset(.9);
-      kTCenthist_CF_LL_ALAL_exp[2][iBins][iCent]->GetXaxis()->SetRangeUser(0,0.125);
-      kTCenthist_CF_LL_ALAL_exp[2][iBins][iCent]->GetYaxis()->SetTitleOffset(0.9);
-      kTCenthist_CF_LL_ALAL_exp[2][iBins][iCent]->SetMarkerColor(fColors[iBins]);
-      kTCenthist_CF_LL_ALAL_exp[2][iBins][iCent]->SetLineColor(fColors[iBins]);
-      kTCenthist_CF_LL_ALAL_exp[2][iBins][iCent]->SetTitle(";k* (GeV/#it{c}); #it{C}(k*)");
+        TPdir->Add(kTCenthist_CF_LL_ALAL_exp[2][iBins][iCent]);
 
-      TPdir->Add(kTCenthist_CF_LL_ALAL_exp[2][iBins][iCent]);
+        TString pXiBinsCentName = Form("kTCent%ihist_CF_pXi_%i",iCent,iBins);
+        kTCenthist_CF_pXi_ApAXi_exp[0][iBins][iCent] = Calculate_CF(SEkTCentDistBin[0][4][iBins][iCent],MEkTCentDistBin[0][4][iBins][iCent],pXiBinsCentName.Data(),normleft,normright,suffix,10);
+        TString ApAXiBinsCentName = Form("kTCent%ihist_CF_ApAXi_%i",iCent,iBins);
+        kTCenthist_CF_pXi_ApAXi_exp[1][iBins][iCent] = Calculate_CF(SEkTCentDistBin[1][5][iBins][iCent],MEkTCentDistBin[1][5][iBins][iCent],ApAXiBinsCentName.Data(),normleft,normright,suffix,10);
+        TString SumpXiApAXiBinsCentName = Form("kTCent%ihist_CF_pXi_ApAXi_exp_sum_%i",iCent,iBins);
+        kTCenthist_CF_pXi_ApAXi_exp[2][iBins][iCent] = add_CF(kTCenthist_CF_pXi_ApAXi_exp[0][iBins][iCent],kTCenthist_CF_pXi_ApAXi_exp[1][iBins][iCent],SumpXiApAXiBinsCentName.Data());
+        kTCenthist_CF_pXi_ApAXi_exp[2][iBins][iCent]->SetStats(0);
+        kTCenthist_CF_pXi_ApAXi_exp[2][iBins][iCent]->GetXaxis()->SetTitleOffset(.9);
+        kTCenthist_CF_pXi_ApAXi_exp[2][iBins][iCent]->GetXaxis()->SetRangeUser(0,0.125);
+        kTCenthist_CF_pXi_ApAXi_exp[2][iBins][iCent]->GetYaxis()->SetTitleOffset(0.9);
+        kTCenthist_CF_pXi_ApAXi_exp[2][iBins][iCent]->SetMarkerColor(fColors[iBins]);
+        kTCenthist_CF_pXi_ApAXi_exp[2][iBins][iCent]->SetLineColor(fColors[iBins]);
+        kTCenthist_CF_pXi_ApAXi_exp[2][iBins][iCent]->SetTitle(";k* (GeV/#it{c}); #it{C}(k*)");
 
-      TString pXiBinsCentName = Form("kTCent%ihist_CF_pXi_%i",iCent,iBins);
-      kTCenthist_CF_pXi_ApAXi_exp[0][iBins][iCent] = Calculate_CF(SEkTCentDistBin[0][4][iBins][iCent],MEkTCentDistBin[0][4][iBins][iCent],pXiBinsCentName.Data(),normleft,normright,suffix,10);
-      TString ApAXiBinsCentName = Form("kTCent%ihist_CF_ApAXi_%i",iCent,iBins);
-      kTCenthist_CF_pXi_ApAXi_exp[1][iBins][iCent] = Calculate_CF(SEkTCentDistBin[1][5][iBins][iCent],MEkTCentDistBin[1][5][iBins][iCent],ApAXiBinsCentName.Data(),normleft,normright,suffix,10);
-      TString SumpXiApAXiBinsCentName = Form("kTCent%ihist_CF_pXi_ApAXi_exp_sum_%i",iCent,iBins);
-      kTCenthist_CF_pXi_ApAXi_exp[2][iBins][iCent] = add_CF(kTCenthist_CF_pXi_ApAXi_exp[0][iBins][iCent],kTCenthist_CF_pXi_ApAXi_exp[1][iBins][iCent],SumpXiApAXiBinsCentName.Data());
-      kTCenthist_CF_pXi_ApAXi_exp[2][iBins][iCent]->SetStats(0);
-      kTCenthist_CF_pXi_ApAXi_exp[2][iBins][iCent]->GetXaxis()->SetTitleOffset(.9);
-      kTCenthist_CF_pXi_ApAXi_exp[2][iBins][iCent]->GetXaxis()->SetRangeUser(0,0.125);
-      kTCenthist_CF_pXi_ApAXi_exp[2][iBins][iCent]->GetYaxis()->SetTitleOffset(0.9);
-      kTCenthist_CF_pXi_ApAXi_exp[2][iBins][iCent]->SetMarkerColor(fColors[iBins]);
-      kTCenthist_CF_pXi_ApAXi_exp[2][iBins][iCent]->SetLineColor(fColors[iBins]);
-      kTCenthist_CF_pXi_ApAXi_exp[2][iBins][iCent]->SetTitle(";k* (GeV/#it{c}); #it{C}(k*)");
+        TPdir->Add(kTCenthist_CF_pXi_ApAXi_exp[2][iBins][iCent]);
 
-      TPdir->Add(kTCenthist_CF_pXi_ApAXi_exp[2][iBins][iCent]);
-
+      }
     }
-
     if(iBins==0){
       cSumkTPP->cd();
       kThist_CF_pp_ApAp_exp[2][iBins]->DrawCopy();
