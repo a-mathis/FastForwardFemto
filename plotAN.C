@@ -307,8 +307,10 @@ void plotAN(const char* file="~/Results/LHC17p_fast/AnalysisResults.root")
   SetStyleHisto(protonPt, 0, 1);
   protonPt->SetTitle("; #it{p}_{T} (GeV/#it{c}); Entries");
   SetStyleHisto(protonPhi, 0, 1);
+  protonPhi->GetYaxis()->SetRangeUser(0,1.1*protonPhi->GetMaximum());
   protonPhi->SetTitle("; #phi (rad); Entries");
   SetStyleHisto(protonEta, 0, 1);
+  protonEta->GetXaxis()->SetRangeUser(-1.0,1.0);
   protonEta->SetTitle("; #eta; Entries");
   SetStyleHisto(protonDCAxy, 0, 1);
   protonDCAxy->SetTitle("; DCA_{xy} (cm); Entries");
@@ -341,8 +343,10 @@ void plotAN(const char* file="~/Results/LHC17p_fast/AnalysisResults.root")
   SetStyleHisto(lambdaPt, 0, 1);
   lambdaPt->SetTitle("; #it{p}_{T} (GeV/#it{c}); Entries");
   SetStyleHisto(lambdaPhi, 0, 1);
+  lambdaPhi->GetYaxis()->SetRangeUser(0,1.1*lambdaPhi->GetMaximum());
   lambdaPhi->SetTitle("; #phi (rad); Entries");
   SetStyleHisto(lambdaEta, 0, 1);
+  lambdaEta->GetXaxis()->SetRangeUser(-1.0,1.0);
   lambdaEta->SetTitle("; #eta; Entries");
   cQAlambda->Divide(2,2);
   cQAlambda->cd(1);

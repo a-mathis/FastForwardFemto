@@ -73,8 +73,8 @@ void SetStyleHisto(TH1 *histo, int marker, int color)
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 TH1F* Calculate_CF(TH1F* histRE_relK,TH1F* histME_relK, TString CFname,Double_t normleft,Double_t normright)
 {
-  histRE_relK->Sumw2();
-  histME_relK->Sumw2();
+//  histRE_relK->Sumw2();
+//  histME_relK->Sumw2();
   Double_t norm_relK = histRE_relK->Integral(histRE_relK->FindBin(normleft),histRE_relK->FindBin(normright)) / histME_relK->Integral(histME_relK->FindBin(normleft),histME_relK->FindBin(normright));
 
   TH1F* Hist_CF = (TH1F*)histRE_relK->Clone(CFname.Data());
@@ -138,7 +138,7 @@ TH1F *getSignalHisto(TF1 *function, TH1F *histo, float rangeLow, float rangeHigh
   }
   result->SetFillColor(fFillColors[0]);
   result->SetLineColor(fFillColors[0]);
-  result->Sumw2();
+//  result->Sumw2();
   return result;
 }
 
