@@ -102,10 +102,13 @@ void SetStyle(bool graypalette=false, bool title=false)
   Double_t stops[NRGBs];
   for(int i=0; i<NRGBs; ++i) stops[i] = float(i)/(NRGBs-1);
 
-  Double_t red[NRGBs]   = { 1.,  29./255., 25./255., 27./255., 32./255.};
-  Double_t green[NRGBs] = { 1., 221./255., 160./255., 113./255., 74./255.};
-  Double_t blue[NRGBs] = {  1., 221./255., 184./255., 154./255., 129./255.};
-  TColor::CreateGradientColorTable(NRGBs,stops,red,green,blue,NCont);
+//  Double_t red[NRGBs]   = { 1.,  29./255., 25./255., 27./255., 37./255.};
+//  Double_t green[NRGBs] = { 1., 221./255., 160./255., 113./255., 73./255.};
+//  Double_t blue[NRGBs] = {  1., 221./255., 184./255., 154./255., 114./255.};
+  Double_t red[NRGBs]   = { 1.,  29./255., 25./255., 27./255., 7./255.};
+  Double_t green[NRGBs] = { 1., 221./255., 160./255., 113./255., 93./255.};
+  Double_t blue[NRGBs] = {  1., 221./255., 184./255., 154./255., 134./255.};
+  TColor::CreateGradientColorTable(NRGBs,stops,red,green,blue,NCont,0.8);
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -162,7 +165,7 @@ void plotLambda(const int flag = 0) {
 
   SetStyleHisto(sigma);
   sigma->SetMaximum(5);
-  sigma->SetMinimum(0.0);
+  sigma->SetMinimum(1.0);
   sigma->SetTitle(";;;#it{n_{#sigma}}");
   sigma->GetZaxis()->SetLabelFont(hist_emptyhist->GetXaxis()->GetLabelFont());
   sigma->GetZaxis()->SetTitleFont(hist_emptyhist->GetXaxis()->GetTitleFont());
@@ -177,12 +180,12 @@ void plotLambda(const int flag = 0) {
   contours[2] = 5;
   sigma->SetContour(nContours,contours);
 
-  const int nContoursLedni = 1;
-  double contoursLedni[nContoursLedni];
-  contoursLedni[0] = 0.00000001;
-  ledniSucks->SetContour(nContoursLedni, contoursLedni);
-  ledniSucks->SetLineColor(kRed+1);
-  ledniSucks->SetLineWidth(2);
+//  const int nContoursLedni = 1;
+//  double contoursLedni[nContoursLedni];
+//  contoursLedni[0] = 0.00000001;
+//  ledniSucks->SetContour(nContoursLedni, contoursLedni);
+//  ledniSucks->SetLineColor(kRed+1);
+//  ledniSucks->SetLineWidth(2);
 
   // PRL C02 (2015) 022301.
   TGraphErrors *grStar = new TGraphErrors();
@@ -366,7 +369,7 @@ void plotLambda(const int flag = 0) {
   sigma->SetLineColor(kWhite);
   sigma->SetLineWidth(1);
   sigma->SetLineStyle(2);
-  ledniSucks->Draw("cont3 same");
+//  ledniSucks->Draw("cont3 same");
   grStar_syst->Draw("2same");
   grStar->Draw("PZ same");
 //  grNagara->Draw("P same");

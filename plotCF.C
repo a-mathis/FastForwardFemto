@@ -77,8 +77,8 @@ void SetStyleHisto(TH1 *histo, int marker, int color)
   histo->GetYaxis()->SetTitleSize(0.05);
   histo->GetYaxis()->SetLabelOffset(0.01);
   histo->GetYaxis()->SetTitleOffset(1.25);
-  histo->SetMarkerSize(1.25);
-  histo->SetLineWidth(2);
+  histo->SetMarkerSize(1.5);
+  histo->SetLineWidth(2.5);
   histo->SetMarkerStyle(fMarkers[marker]);
   histo->SetMarkerColor(fColors[color]);
   histo->SetLineColor(fColors[color]);
@@ -223,8 +223,10 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   // for pythia comparison
   const float rebin = 2;
 
-  const int energy = 13; // TeV
-  const char *system = "pp";
+  const int energy = 5; // TeV
+  const char *system = "p-Pb";
+//  const int energy = 13; // TeV
+//  const char *system = "pp";
 
   bool EPOS = false;
 
@@ -234,12 +236,17 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   const char *addonSim = addon;
 
   TString data = "Data";
-  TString sim = "Pythia 8";
+  TString sim = "DPMJET";
+//  TString sim = "Pythia 8";
 
-  float r = 1.188;
-  float rErr = 0.009;
-  float rSystErrUp = 0.016;
-  float rSystErrDown = 0.009;
+  float r = 1.437;
+  float rErr = 0.011;
+  float rSystErrUp = 0.013;
+  float rSystErrDown = 0.006;
+//  float r = 1.188;
+//  float rErr = 0.009;
+//  float rSystErrUp = 0.016;
+//  float rSystErrDown = 0.009;
 
   float ppBL0 = 0.924;
   float ppBL1 = 0.386;
@@ -323,10 +330,10 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   SetStyleHisto(hist_CF_Lp_ALAp_exp[1], 0,2);
   SetStyleHisto(hist_CF_LL_ALAL_exp[1], 0,2);
   SetStyleHisto(hist_CF_pXi_ApAXi_exp[1], 0,2);
-  SetStyleHisto(hist_CF_pp_ApAp_exp[2], 0,2);
-  SetStyleHisto(hist_CF_Lp_ALAp_exp[2], 0,2);
-  SetStyleHisto(hist_CF_LL_ALAL_exp[2], 0,2);
-  SetStyleHisto(hist_CF_pXi_ApAXi_exp[2], 0,2);
+  SetStyleHisto(hist_CF_pp_ApAp_exp[2], 0,0);
+  SetStyleHisto(hist_CF_Lp_ALAp_exp[2], 0,0);
+  SetStyleHisto(hist_CF_LL_ALAL_exp[2], 0,0);
+  SetStyleHisto(hist_CF_pXi_ApAXi_exp[2], 0,0);
 
   // SYSTEMATIC UNCERTAINTIES
   TString input_sys_pp = "C2totalsysPP.root";
@@ -449,8 +456,8 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
     grpXiUpperCoulomb = (TGraph*)systFit->Get("pXimGraphUpperLim_COULOMB");
 
     grFemtopp = FemtoModelFitBands(grppDefault, grppLow, grppUp);
-    grFemtopp->SetFillColor(fColors[7]);
-    grFemtopp->SetLineColor(fColors[7]);
+    grFemtopp->SetFillColor(fColors[2]);
+    grFemtopp->SetLineColor(fColors[2]);
     grFemtopp->SetLineWidth(3);
     grFemtopLNLO = FemtoModelFitBands(grpLDefaultNLO, grpLLowNLO, grpLUpNLO);
     grFemtopLNLO->SetFillColor(fColors[1]);
@@ -475,8 +482,8 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   }
 
   TGraph *grFakeSyst = new TGraph();
-  grFakeSyst->SetFillColor(fFillColors[2]);
-  grFakeSyst->SetLineColor(fFillColors[2]);
+  grFakeSyst->SetFillColor(fFillColors[0]);
+  grFakeSyst->SetLineColor(fFillColors[0]);
 
   TGraph *grFakePP = new TGraph();
   grFakePP->SetLineColor(fColors[7]);
@@ -623,7 +630,7 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   Tgraph_syserror_pp_ApAp->GetXaxis()->SetRangeUser(0, 0.125);
   Tgraph_syserror_pp_ApAp->GetYaxis()->SetRangeUser(0.5, 3.5);
   if(grFemtopp) grFemtopp->Draw("L3 same");
-  Tgraph_syserror_pp_ApAp->SetFillColorAlpha(kBlue, 0.4);
+  Tgraph_syserror_pp_ApAp->SetFillColorAlpha(kBlack, 0.4);
   Tgraph_syserror_pp_ApAp->Draw("2 same");
   hist_CF_pp_ApAp_exp[2]->Draw("pe same");
   TLegend *legpp = new TLegend(0.48,0.595,0.85,0.81);
@@ -856,7 +863,7 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   Tgraph_syserror_pp_ApAp->GetXaxis()->SetRangeUser(0, 0.125);
   Tgraph_syserror_pp_ApAp->GetYaxis()->SetRangeUser(0.5, 3.5);
   if(grFemtopp) grFemtopp->Draw("L3 same");
-  Tgraph_syserror_pp_ApAp->SetFillColorAlpha(kBlue-9, 0.8);
+  Tgraph_syserror_pp_ApAp->SetFillColorAlpha(kBlack, 0.4);
   Tgraph_syserror_pp_ApAp->Draw("2 same");
   hist_CF_pp_ApAp_exp[2]->Draw("pe same");
   TLegend *legpp2 = new TLegend(0.53,0.545,0.85,0.76);
@@ -892,7 +899,7 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   Tgraph_syserror_pL_ApAL->GetYaxis()->SetRangeUser(0.8, 2.);
   if(grFemtopLNLO) grFemtopLNLO->Draw("l3 same");
   if(!EPOS && grFemtopLLO) grFemtopLLO->Draw("l3 same");
-  Tgraph_syserror_pL_ApAL->SetFillColorAlpha(kBlue-9, 0.8);
+  Tgraph_syserror_pL_ApAL->SetFillColorAlpha(kBlack, 0.4);
   Tgraph_syserror_pL_ApAL->Draw("2 same");
   hist_CF_Lp_ALAp_exp[2]->Draw("pe same");
   TLegend *legLp2;
@@ -928,7 +935,7 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   Tgraph_syserror_LL_ALAL->GetXaxis()->SetNdivisions(505);
   Tgraph_syserror_LL_ALAL->GetYaxis()->SetRangeUser(0.35, 2.);
   if(grFemtoLL) grFemtoLL->Draw("l3 same");
-  Tgraph_syserror_LL_ALAL->SetFillColorAlpha(kBlue-9, 0.8);
+  Tgraph_syserror_LL_ALAL->SetFillColorAlpha(kBlack, 0.4);
   Tgraph_syserror_LL_ALAL->Draw("2 same");
   hist_CF_LL_ALAL_exp[2]->Draw("pe same");
   TLegend *legLL2 = new TLegend(0.53,0.545,0.85,0.76);
@@ -956,8 +963,8 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   Tgraph_syserror_pXi_ApAXi->SetTitle("; k* (GeV/#it{c}); #it{C}(k*)");
   Tgraph_syserror_pXi_ApAXi->GetXaxis()->SetRangeUser(0, 0.2);
   Tgraph_syserror_pXi_ApAXi->GetXaxis()->SetNdivisions(505);
-  Tgraph_syserror_pXi_ApAXi->GetYaxis()->SetRangeUser(0.75, 3.);
-  Tgraph_syserror_pXi_ApAXi->SetFillColorAlpha(kBlue-9, 0.9);
+  Tgraph_syserror_pXi_ApAXi->GetYaxis()->SetRangeUser(0.75, 5.);
+  Tgraph_syserror_pXi_ApAXi->SetFillColorAlpha(kBlack, 0.4);
   if(grFemtopXi) grFemtopXi->Draw("l3 same");
   if(grFemtopXiCoulomb) grFemtopXiCoulomb->Draw("l3 same");
   Tgraph_syserror_pXi_ApAXi->Draw("2 same");
