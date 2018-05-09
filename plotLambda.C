@@ -154,6 +154,12 @@ void plotLambda(const int flag = 0) {
     ledniSucks = (TH2F*)file2->Get("hMinCk_1");
   }
 
+  // p-Pb 5.02 TeV
+  if(flag == 2) {
+    sigma = (TH2F*)file2->Get("hNsigma_2");
+    ledniSucks = (TH2F*)file2->Get("hMinCk_2");
+  }
+
   SetStyleHisto(sigma);
   sigma->SetMaximum(5);
   sigma->SetMinimum(0.0);
@@ -360,7 +366,7 @@ void plotLambda(const int flag = 0) {
   sigma->SetLineColor(kWhite);
   sigma->SetLineWidth(1);
   sigma->SetLineStyle(2);
-//  ledniSucks->Draw("cont3 same");
+  ledniSucks->Draw("cont3 same");
   grStar_syst->Draw("2same");
   grStar->Draw("PZ same");
 //  grNagara->Draw("P same");
@@ -421,6 +427,22 @@ void plotLambda(const int flag = 0) {
     BeamText.DrawLatex(0.6, 0.255, "pp #sqrt{#it{s}} = 13 TeV");
     BeamText.DrawLatex(0.6, 0.205, "#Lambda#Lambda #oplus #bar{#Lambda}#bar{#Lambda} pairs");
   }
+  if(flag == 2) {
+    sigmaLabel.SetTextAngle(320);
+    sigmaLabel.DrawLatex(-1.74,1.16,"3#kern[0.2]{#sigma}");
+    sigmaLabel.SetTextAngle(-35);
+    sigmaLabel.DrawLatex(-1.74,3.41,"5#kern[0.2]{#sigma}");
+
+    sigmaLabel.SetTextAngle(300);
+    sigmaLabel.DrawLatex(0.41,1.25,"3#kern[0.2]{#sigma}");
+    sigmaLabel.SetTextAngle(-65);
+    sigmaLabel.DrawLatex(0.15,1.25, "5#kern[0.2]{#sigma}");
+
+    BeamText.DrawLatex(0.6, 0.305, "ALICE Preliminary");
+    BeamText.SetTextSize(gStyle->GetTextSize()*0.65);
+    BeamText.DrawLatex(0.6, 0.255, "p-Pb #sqrt{#it{s_{NN}}} = 5.02 TeV");
+    BeamText.DrawLatex(0.6, 0.205, "#Lambda#Lambda #oplus #bar{#Lambda}#bar{#Lambda} pairs");
+  }
 
   pad22->cd();
   pad22->SetTopMargin(0.025);
@@ -441,5 +463,6 @@ void plotLambda(const int flag = 0) {
   leg2->Draw("same");
   if(flag == 0) c2->SaveAs("LambdaLambda_global.pdf");
   if(flag == 1) c2->SaveAs("LambdaLambda_13TeV.pdf");
+  if(flag == 2) c2->SaveAs("LambdaLambda_pPb502TeV.pdf");
 
 }
