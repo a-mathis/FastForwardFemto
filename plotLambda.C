@@ -97,18 +97,21 @@ void SetStyle(bool graypalette=false, bool title=false)
   gStyle->SetLegendFillColor(kWhite);
   gStyle->SetLegendFont(42);
   gStyle->SetLegendBorderSize(0);
-
-  const int NRGBs = 5;
-  Double_t stops[NRGBs];
-  for(int i=0; i<NRGBs; ++i) stops[i] = float(i)/(NRGBs-1);
-
-//  Double_t red[NRGBs]   = { 1.,  29./255., 25./255., 27./255., 37./255.};
-//  Double_t green[NRGBs] = { 1., 221./255., 160./255., 113./255., 73./255.};
-//  Double_t blue[NRGBs] = {  1., 221./255., 184./255., 154./255., 114./255.};
-  Double_t red[NRGBs]   = { 1.,  29./255., 25./255., 27./255., 7./255.};
-  Double_t green[NRGBs] = { 1., 221./255., 160./255., 113./255., 93./255.};
-  Double_t blue[NRGBs] = {  1., 221./255., 184./255., 154./255., 134./255.};
-  TColor::CreateGradientColorTable(NRGBs,stops,red,green,blue,NCont,0.8);
+  Int_t palette[4];
+  palette[0] = kWhite;
+  palette[1] = 33;
+  palette[2] = 38;
+  palette[3] = kGray;
+  gStyle->SetPalette(4,palette);
+//
+//  const int NRGBs = 5;
+//  Double_t stops[NRGBs];
+//  for(int i=0; i<NRGBs; ++i) stops[i] = float(i)/(NRGBs-1);
+//
+//  Double_t red[NRGBs]   = { 1.,  29./255., 25./255., 27./255., 32./255.};
+//  Double_t green[NRGBs] = { 1., 221./255., 160./255., 113./255., 74./255.};
+//  Double_t blue[NRGBs] = {  1., 221./255., 184./255., 154./255., 129./255.};
+//  TColor::CreateGradientColorTable(NRGBs,stops,red,green,blue,NCont);
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -144,12 +147,17 @@ void plotLambda(const int flag = 0) {
 
   // Data
   TFile *file2 = TFile::Open("CombinedMap.root");
-  TH2F *sigma, *ledniSucks;
-
+  TH2F *sigma, *ledniSucks,*ledniSucks2;
+  bool GetInvLedniSucks = true;
+  TFile *file3;
+  if (GetInvLedniSucks) file3 = TFile::Open("Friendship.root");
   // Combined fit
   if(flag == 0) {
     sigma = (TH2F*)file2->Get("hGlobNsigma");
     ledniSucks = (TH2F*)file2->Get("hGlobMinCk");
+    if (GetInvLedniSucks) {
+      ledniSucks2 = (TH2F*)file3->Get("invLedniSucks");
+    }
   }
   // pp 13 TeV
   if(flag == 1) {
@@ -165,27 +173,40 @@ void plotLambda(const int flag = 0) {
 
   SetStyleHisto(sigma);
   sigma->SetMaximum(5);
-  sigma->SetMinimum(1.0);
+  sigma->SetMinimum(.0);
   sigma->SetTitle(";;;#it{n_{#sigma}}");
   sigma->GetZaxis()->SetLabelFont(hist_emptyhist->GetXaxis()->GetLabelFont());
   sigma->GetZaxis()->SetTitleFont(hist_emptyhist->GetXaxis()->GetTitleFont());
   sigma->GetZaxis()->SetLabelSize(hist_emptyhist->GetXaxis()->GetLabelSize());
   sigma->GetZaxis()->SetTitleSize(hist_emptyhist->GetXaxis()->GetTitleSize());
   TH2F *sigma2 = (TH2F*)sigma->Clone();
-
-  const int nContours = 3;
+  const int nContours = 4;
   double contours[nContours];
-  contours[0] = 1;
+  contours[0] = 0;
   contours[1] = 3;
   contours[2] = 5;
+  contours[3] = 999;
   sigma->SetContour(nContours,contours);
+  sigma2->SetContour(nContours,contours);
 
-//  const int nContoursLedni = 1;
-//  double contoursLedni[nContoursLedni];
-//  contoursLedni[0] = 0.00000001;
-//  ledniSucks->SetContour(nContoursLedni, contoursLedni);
-//  ledniSucks->SetLineColor(kRed+1);
-//  ledniSucks->SetLineWidth(2);
+
+  const int nContoursLedni = 1;
+  double contoursLedni[nContoursLedni];
+  contoursLedni[0] = 0.00000001;
+  ledniSucks->SetContour(nContoursLedni, contoursLedni);
+  ledniSucks->SetLineColorAlpha(kGray,0.5);
+  ledniSucks->SetLineWidth(2);
+
+  if (GetInvLedniSucks) {
+    const int nContoursLedni2 = 4;
+    double contoursLedni2[nContoursLedni2];
+    contoursLedni2[0] = 0;
+    contoursLedni2[1] = 3;
+    contoursLedni2[2] = 5;
+    contoursLedni2[3] = 14;
+    ledniSucks2->SetContour(nContoursLedni2, contoursLedni2);
+    ledniSucks2->SetFillStyle(3663);
+  }
 
   // PRL C02 (2015) 022301.
   TGraphErrors *grStar = new TGraphErrors();
@@ -317,6 +338,27 @@ void plotLambda(const int flag = 0) {
   grStarFake->SetFillColor(fFillColors[0]);
   grStarFake->SetLineColor(fFillColors[0]);
 
+  TGraphErrors *grEntry1Fake = new TGraphErrors();
+  grEntry1Fake->SetMarkerStyle(kOpenSquare);
+  grEntry1Fake->SetMarkerColor(33);
+  grEntry1Fake->SetMarkerSize(1.1);
+  grEntry1Fake->SetFillColor(33);
+  grEntry1Fake->SetLineColor(kBlack);
+
+  TGraphErrors *grEntry2Fake = new TGraphErrors();
+  grEntry2Fake->SetMarkerStyle(grStar->GetMarkerStyle());
+  grEntry2Fake->SetMarkerColor(38);
+  grEntry2Fake->SetMarkerSize(1.1);
+  grEntry2Fake->SetFillColor(38);
+  grEntry2Fake->SetLineColor(kBlack);
+
+  TGraphErrors *grEntry3Fake = new TGraphErrors();
+  grEntry3Fake->SetMarkerStyle(grStar->GetMarkerStyle());
+  grEntry3Fake->SetMarkerColor(kWhite);
+  grEntry3Fake->SetMarkerSize(grStar->GetMarkerSize());
+  grEntry3Fake->SetFillColor(kWhite);
+  grEntry3Fake->SetLineColor(kBlack);
+
   pad2->cd();
   pad2->SetTopMargin(0.025);
   TLegend *leg = new TLegend(0.01, 0.18, 0.4, 0.95);
@@ -331,8 +373,8 @@ void plotLambda(const int flag = 0) {
   leg->AddEntry(grNSC89, "NSC89", "LP");
   leg->AddEntry(grNSC97, "NSC97", "LP");
   leg->AddEntry(grEhime, "Ehime", "P");
-  leg->AddEntry(grfss2, "fss2", "P");
   leg->AddEntry(grESC8, "ESC08", "P");
+  leg->AddEntry(grfss2, "fss2", "P");
   leg->Draw("same");
 
   TLatex ref;
@@ -360,16 +402,23 @@ void plotLambda(const int flag = 0) {
   pad22->Draw();
   pad12->cd();
   pad12->SetTopMargin(0.025);
-  pad12->SetRightMargin(0.16);
+  pad12->SetRightMargin(0.01);
   hist_emptyhist->GetXaxis()->SetRangeUser(-2, 5);
   hist_emptyhist->GetYaxis()->SetRangeUser(0.,18);
   hist_emptyhist->Draw();
-  sigma2->DrawCopy("colz same");
+  sigma2->DrawCopy("col same");
   sigma->Draw("cont3 same");
   sigma->SetLineColor(kWhite);
   sigma->SetLineWidth(1);
   sigma->SetLineStyle(2);
-//  ledniSucks->Draw("cont3 same");
+
+  if (GetInvLedniSucks) {
+    ledniSucks2->Draw("col same");
+  } else {
+    ledniSucks->Draw("cont3 same");
+  }
+
+
   grStar_syst->Draw("2same");
   grStar->Draw("PZ same");
 //  grNagara->Draw("P same");
@@ -394,24 +443,27 @@ void plotLambda(const int flag = 0) {
   BeamText.SetNDC(kTRUE);
 
   if(flag == 0) {
-    sigmaLabel.SetTextAngle(32);
-    sigmaLabel.DrawLatex(1.35, 7.4, "1#kern[0.3]{#sigma}");
-    sigmaLabel.SetTextAngle(-50);
-    sigmaLabel.DrawLatex(0.7, 1.5, "3#kern[0.2]{#sigma}");
-    sigmaLabel.SetTextAngle(-55);
-    sigmaLabel.DrawLatex(0.4, 1.5, "5#kern[0.2]{#sigma}");
+//    sigmaLabel.SetTextAngle(32);
+//    sigmaLabel.DrawLatex(1.35, 7.4, "1#kern[0.3]{#sigma}");
+//    sigmaLabel.SetTextAngle(-50);
+//    sigmaLabel.DrawLatex(0.7, 1.5, "3#kern[0.2]{#sigma}");
+//    sigmaLabel.SetTextAngle(-55);
+//    sigmaLabel.DrawLatex(0.4, 1.5, "5#kern[0.2]{#sigma}");
+//
+//    sigmaLabel.SetTextAngle(-35);
+//    sigmaLabel.DrawLatex(-1.5, 1.2, "3#kern[0.2]{#sigma}");
+//    sigmaLabel.SetTextAngle(-35);
+//    sigmaLabel.DrawLatex(-1.35, 2.4, "5#kern[0.2]{#sigma}");
 
-    sigmaLabel.SetTextAngle(-35);
-    sigmaLabel.DrawLatex(-1.5, 1.2, "3#kern[0.2]{#sigma}");
-    sigmaLabel.SetTextAngle(-35);
-    sigmaLabel.DrawLatex(-1.35, 2.4, "5#kern[0.2]{#sigma}");
-
-    BeamText.SetTextSize(gStyle->GetTextSize()*0.75);
-    BeamText.DrawLatex(0.6, 0.365, "ALICE Preliminary");
-    BeamText.DrawLatex(0.6, 0.32, "pp #sqrt{#it{s}} = 7 TeV");
-    BeamText.DrawLatex(0.6, 0.275, "pp #sqrt{#it{s}} = 13 TeV");
-    BeamText.DrawLatex(0.6, 0.23, "p-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV");
-    BeamText.DrawLatex(0.6, 0.185, "#Lambda#Lambda #oplus #bar{#Lambda}#bar{#Lambda} pairs");
+    BeamText.SetTextSize(gStyle->GetTextSize()*0.67);
+    BeamText.DrawLatex(0.75, 0.92, "#Lambda#Lambda #oplus #bar{#Lambda}#bar{#Lambda} pairs");
+    BeamText.DrawLatex(0.75, 0.875, "pp #sqrt{#it{s}} = 7 TeV");
+    BeamText.DrawLatex(0.75, 0.83, "pp #sqrt{#it{s}} = 13 TeV");
+    BeamText.DrawLatex(0.75, 0.785, "p-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV");
+    c2->cd();
+    BeamText.SetTextSize(gStyle->GetTextSize()*0.85);
+    BeamText.DrawLatex(0.8, 0.96, "ALICE Preliminary");
+    BeamText.DrawLatex(0.8, 0.90, "Exclusion");
   }
   if(flag == 1) {
     sigmaLabel.SetTextAngle(12.5);
@@ -449,10 +501,15 @@ void plotLambda(const int flag = 0) {
 
   pad22->cd();
   pad22->SetTopMargin(0.025);
-  TLegend *leg2 = new TLegend(0.05, 0.18, 0.99, 0.95);
+  TLegend *leg2 = new TLegend(0.01, 0.01, 0.99, 0.89);
   leg2->SetBorderSize(0);
   leg2->SetTextFont(42);
   leg2->SetTextSize(gStyle->GetTextSize()*2.25);
+//  leg2->AddEntry(grEntry3Fake, "Exclusion", "");
+//  leg2->AddEntry(grEntry3Fake, "#sigma < 3", "PF");
+  leg2->AddEntry(grEntry1Fake, "3 < #sigma < 5", "PF");
+  leg2->AddEntry(grEntry2Fake, "#sigma >5 ", "PF");
+  leg2->AddEntry(grEntry3Fake, " ", "");
   leg2->AddEntry(grStarFake, "STAR", "PF");
   leg2->AddEntry(grHKMYY, "HKMYY", "P");
   leg2->AddEntry(grFG, "FG", "P");
@@ -461,11 +518,12 @@ void plotLambda(const int flag = 0) {
   leg2->AddEntry(grNSC89, "NSC89", "LP");
   leg2->AddEntry(grNSC97, "NSC97", "LP");
   leg2->AddEntry(grEhime, "Ehime", "P");
-  leg2->AddEntry(grfss2, "fss2", "P");
   leg2->AddEntry(grESC8, "ESC08", "P");
+  leg2->AddEntry(grfss2, "fss2", "P");
   leg2->Draw("same");
   if(flag == 0) c2->SaveAs("LambdaLambda_global.pdf");
   if(flag == 1) c2->SaveAs("LambdaLambda_13TeV.pdf");
   if(flag == 2) c2->SaveAs("LambdaLambda_pPb502TeV.pdf");
+
 
 }

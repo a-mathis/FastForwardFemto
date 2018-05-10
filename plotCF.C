@@ -11,7 +11,7 @@
 #include "TStyle.h"
 #include "TLatex.h"
 
-std::vector<int> fFillColors = {kGray+1, kRed-10, kBlue-9, kGreen-8, kMagenta-9, kOrange-9, kCyan-8, kYellow-7};
+std::vector<int> fFillColors = {kGray+1, kRed-10, kBlue-9, kGreen-8, kMagenta-9, kOrange-9, kCyan-3, kYellow-7};
 std::vector<int> fColors     = {kBlack, kRed+1 , kBlue+2, kGreen+3, kMagenta+1, kOrange-1, kCyan+2, kYellow+2};
 std::vector<int> fMarkers    = {kFullCircle, kFullSquare, kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross, kFullCross, kFullDiamond, kFullStar, kOpenStar};
 
@@ -78,7 +78,25 @@ void SetStyleHisto(TH1 *histo, int marker, int color)
   histo->GetYaxis()->SetLabelOffset(0.01);
   histo->GetYaxis()->SetTitleOffset(1.25);
   histo->SetMarkerSize(1.5);
-  histo->SetLineWidth(2.5);
+  histo->SetLineWidth(2);
+  histo->SetMarkerStyle(fMarkers[marker]);
+  histo->SetMarkerColor(fColors[color]);
+  histo->SetLineColor(fColors[color]);
+}
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void SetStyleGraph(TGraph *histo, int marker, int color)
+{
+  histo->GetXaxis()->SetLabelSize(0.045);
+  histo->GetXaxis()->SetTitleSize(0.05);
+  histo->GetXaxis()->SetLabelOffset(0.01);
+  histo->GetXaxis()->SetTitleOffset(1.2);
+  histo->GetXaxis()->SetLabelFont(42);
+  histo->GetYaxis()->SetLabelSize(0.045);
+  histo->GetYaxis()->SetTitleSize(0.05);
+  histo->GetYaxis()->SetLabelOffset(0.01);
+  histo->GetYaxis()->SetTitleOffset(1.25);
+  histo->SetMarkerSize(1.5);
+  histo->SetLineWidth(2);
   histo->SetMarkerStyle(fMarkers[marker]);
   histo->SetMarkerColor(fColors[color]);
   histo->SetLineColor(fColors[color]);
@@ -223,10 +241,10 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   // for pythia comparison
   const float rebin = 2;
 
-  const int energy = 5; // TeV
-  const char *system = "p-Pb";
-//  const int energy = 13; // TeV
-//  const char *system = "pp";
+//  const int energy = 5; // TeV
+//  const char *system = "p-Pb";
+  const int energy = 13; // TeV
+  const char *system = "pp";
 
   bool EPOS = false;
 
@@ -345,9 +363,13 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   TFile* file_sys_pXi = new TFile(input_sys_pXi.Data());
   TFile* file_sys_LL = new TFile(input_sys_LL.Data());
   TH1F* hist_sys_pp = (TH1F*)file_sys_pp->Get("C2totalsysPP");
+  hist_sys_pp->SetLineWidth(2.0);
   TH1F* hist_sys_pL = (TH1F*)file_sys_pL->Get("C2totalsysPL");
+  hist_sys_pL->SetLineWidth(2.0);
   TH1F* hist_sys_LL = (TH1F*)file_sys_LL->Get("C2totalsysLL");
+  hist_sys_LL->SetLineWidth(2.0);
   TH1F* hist_sys_pXi = (TH1F*)file_sys_pXi->Get("C2totalsysPXi");
+  hist_sys_pXi->SetLineWidth(2.0);
 
   // Sim DATA
   TFile* _file0sim=TFile::Open(simfile);
@@ -484,9 +506,9 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   TGraph *grFakeSyst = new TGraph();
   grFakeSyst->SetFillColor(fFillColors[0]);
   grFakeSyst->SetLineColor(fFillColors[0]);
-
+  SetStyleGraph(grFakeSyst,0,0);
   TGraph *grFakePP = new TGraph();
-  grFakePP->SetLineColor(fColors[7]);
+  grFakePP->SetLineColor(fColors[2]);
   grFakePP->SetLineWidth(4);
   TGraph *grFakePLnlo = new TGraph();
   grFakePLnlo->SetLineColor(fColors[1]);
@@ -656,7 +678,7 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   Can_CF_fitting->cd(2);
   Can_CF_fitting->cd(2)->SetRightMargin(right);
   Can_CF_fitting->cd(2)->SetTopMargin(top);
-  TGraphErrors *Tgraph_syserror_pL_ApAL = DrawSystematicError(hist_CF_Lp_ALAp_exp[2], hist_sys_pL, 0.01);
+  TGraphErrors *Tgraph_syserror_pL_ApAL = DrawSystematicError(hist_CF_Lp_ALAp_exp[2], hist_sys_pL, 0.005);
   Tgraph_syserror_pL_ApAL->SetLineColor(kWhite);
   Tgraph_syserror_pL_ApAL->Draw("ap");
   baselinePL->Draw("same");
@@ -693,7 +715,7 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   Can_CF_fitting->cd(3);
   Can_CF_fitting->cd(3)->SetRightMargin(right);
   Can_CF_fitting->cd(3)->SetTopMargin(top);
-  TGraphErrors *Tgraph_syserror_LL_ALAL = DrawSystematicError(hist_CF_LL_ALAL_exp[2], hist_sys_LL, 0.01);
+  TGraphErrors *Tgraph_syserror_LL_ALAL = DrawSystematicError(hist_CF_LL_ALAL_exp[2], hist_sys_LL, 0.005);
   Tgraph_syserror_LL_ALAL->SetLineColor(kWhite);
   Tgraph_syserror_LL_ALAL->Draw("ap");
   baselineLL->Draw("same");
@@ -721,7 +743,7 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   Can_CF_fitting->cd(4);
   Can_CF_fitting->cd(4)->SetRightMargin(right);
   Can_CF_fitting->cd(4)->SetTopMargin(top);
-  TGraphErrors *Tgraph_syserror_pXi_ApAXi = DrawSystematicError(hist_CF_pXi_ApAXi_exp[2], hist_sys_pXi, 0.01);
+  TGraphErrors *Tgraph_syserror_pXi_ApAXi = DrawSystematicError(hist_CF_pXi_ApAXi_exp[2], hist_sys_pXi, 0.005);
   Tgraph_syserror_pXi_ApAXi->SetLineColor(kWhite);
   Tgraph_syserror_pXi_ApAXi->Draw("ap");
   baselinePXI->Draw("same");
@@ -852,7 +874,7 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
 
 
   // PRELIMINARY PLOTS
-
+  gStyle->SetErrorX(0.);
   TCanvas *Can_CF_pp = new TCanvas("pp","pp", 0,0,650,550);
   Can_CF_pp->SetRightMargin(right);
   Can_CF_pp->SetTopMargin(top);
@@ -870,8 +892,9 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   legpp2->SetBorderSize(0);
   legpp2->SetTextFont(42);
   legpp2->SetTextSize(gStyle->GetTextSize()*0.75);
-  legpp2->AddEntry(hist_CF_pp_ApAp_exp[2], "pp #oplus #bar{p}#bar{p} pairs", "pe");
-  legpp2->AddEntry(grFakeSyst, "Syst. uncertainties", "f");
+  legpp2->AddEntry(grFakeSyst, "pp #oplus #bar{p}#bar{p} pairs", "fpe");
+//  legpp2->AddEntry(hist_CF_pp_ApAp_exp[2], "with Syst. uncertainties", "");
+  legpp2->AddEntry(baselinePP,"Baseline","l");
   legpp2->AddEntry(grFakePP,"Femtoscopic fit","l");
   legpp2->Draw("same");
   BeamText.SetTextSize(gStyle->GetTextSize()*0.85);
@@ -908,8 +931,9 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   legLp2->SetBorderSize(0);
   legLp2->SetTextFont(42);
   legLp2->SetTextSize(gStyle->GetTextSize()*0.75);
-  legLp2->AddEntry(hist_CF_Lp_ALAp_exp[2], "p#Lambda #oplus #bar{p}#bar{#Lambda} pairs", "pe");
-  legLp2->AddEntry(grFakeSyst, "Syst. uncertainties", "f");
+  legLp2->AddEntry(grFakeSyst, "p#Lambda #oplus #bar{p}#bar{#Lambda} pairs", "fpe");
+//  legLp2->AddEntry(hist_CF_Lp_ALAp_exp[2], "with Syst. uncertainties", "");
+  legLp2->AddEntry(baselinePL,"Baseline","l");
   legLp2->AddEntry(grFakePLnlo,"Femtoscopic fit (#chiEFT NLO)","l");
   if(!EPOS) legLp2->AddEntry(grFakePLlo,"Femtoscopic fit (#chiEFT LO)","l");
   legLp2->Draw("same");
@@ -918,8 +942,8 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   else BeamText.DrawLatex(0.55, 0.825, Form("%s #sqrt{#it{s}_{NN}} = %i TeV", system, energy));
   if(!EPOS) text.DrawLatex(0.55, 0.775, Form("#it{r_{0}} = %.3f #pm %.3f ^{+%.3f}_{-%.3f} fm", r, rErr, rSystErrUp, rSystErrDown));
   else text.DrawLatex(0.55, 0.775, Form("#it{N}_{R} = %.3f #pm %.3f ^{+%.3f}_{-%.3f}", r, rErr, rSystErrUp, rSystErrDown));
-  if(EPOS) ref.DrawLatex(0.61, 0.515, "Nucl. Phys. A915 (2013) 24.");
-  else ref.DrawLatex(0.61, 0.465, "Nucl. Phys. A915 (2013) 24.");
+  if(EPOS) ref.DrawLatex(0.61, 0.515, "Nucl. Phys. A915 (2013) 24");
+  else ref.DrawLatex(0.61, 0.465, "Nucl. Phys. A915 (2013) 24");
   if(EPOS) Can_CF_pL->Print("ANplot/CF_pL_EPOS_prelim.pdf");
   else Can_CF_pL->Print("ANplot/CF_pL_Gauss_prelim.pdf");
 
@@ -942,8 +966,9 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   legLL2->SetBorderSize(0);
   legLL2->SetTextFont(42);
   legLL2->SetTextSize(gStyle->GetTextSize()*0.75);
-  legLL2->AddEntry(hist_CF_pp_ApAp_exp[2], "#Lambda#Lambda #oplus #bar{#Lambda}#bar{#Lambda} pairs", "pe");
-  legLL2->AddEntry(grFakeSyst, "Syst. uncertainties", "f");
+  legLL2->AddEntry(grFakeSyst, "#Lambda#Lambda #oplus #bar{#Lambda}#bar{#Lambda} pairs", "fpe");
+//  legLL2->AddEntry(hist_CF_LL_ALAL_exp[2], "with Syst. uncertainties", "");
+  legLL2->AddEntry(baselineLL,"Baseline","l");
   legLL2->AddEntry(grFakeLL,"Femtoscopic fit","l");
   legLL2->Draw("same");
   BeamText.DrawLatex(0.55, 0.875, "ALICE Preliminary");
@@ -973,13 +998,15 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   legpXi2->SetBorderSize(0);
   legpXi2->SetTextFont(42);
   legpXi2->SetTextSize(gStyle->GetTextSize()*0.75);
-  legpXi2->AddEntry(hist_CF_pp_ApAp_exp[2], "p#Xi^{-} #oplus #bar{p}#Xi^{+} pairs", "pe");
-  legpXi2->AddEntry(grFakeSyst, "Syst. uncertainties", "f");
+  legpXi2->AddEntry(grFakeSyst, "p#Xi^{-} #oplus #bar{p}#Xi^{+} pairs", "fpe");
+//  legpXi2->AddEntry(hist_CF_pXi_ApAXi_exp[2], "with Syst. uncertainties", "");
+  legpXi2->AddEntry(baselinePXI,"Baseline","l");
   legpXi2->AddEntry(grFakeXiCoulomb, "Femtoscopic fit (Coulomb)","l");
   legpXi2->AddEntry(grFakepXi,"Femtoscopic fit (HAL QCD)","l");
   legpXi2->Draw("same");
-  ref.DrawLatex(0.61, 0.465, "Nucl. Phys. A967 (2017) 856.");
-  ref.DrawLatex(0.61, 0.415, "PoS LATTICE2016 (2017) 116.");
+
+  ref.DrawLatex(0.61, 0.465, "Nucl. Phys. A967 (2017) 856");
+  ref.DrawLatex(0.61, 0.415, "PoS LATTICE2016 (2017) 116");
   BeamText.DrawLatex(0.55, 0.875, "ALICE Preliminary");
   if(strcmp(system, "pp") == 0) BeamText.DrawLatex(0.55, 0.825, Form("%s #sqrt{#it{s}} = %i TeV", system, energy));
   else BeamText.DrawLatex(0.55, 0.825, Form("%s #sqrt{#it{s}_{NN}} = %i TeV", system, energy));
