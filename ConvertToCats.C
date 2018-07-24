@@ -109,11 +109,13 @@ TH1F* Calculate_CF(TH1F* histRE_relK,TH1F* histME_relK, TString CFname,Double_t 
   histRE_relK->Sumw2();
   histME_relK->Sumw2();
   TH1F* Hist_CF = (TH1F*)histRE_relK->Clone(CFname.Data());
+  Double_t norm_relK = 0;
   if(strcmp(folder, "") == 0) {
-    Double_t norm_relK = histRE_relK->Integral(histRE_relK->FindBin(normleft),histRE_relK->FindBin(normright)) / histME_relK->Integral(histME_relK->FindBin(normleft),histME_relK->FindBin(normright));
-    std::cout << histRE_relK->Integral(histRE_relK->FindBin(normleft),histRE_relK->FindBin(normright)) << '\t' <<
-        histME_relK->Integral(histME_relK->FindBin(normleft),histME_relK->FindBin(normright)) << '\t' <<
-        norm_relK << std::endl;
+    double IntegralSE = histRE_relK->Integral(histRE_relK->FindBin(normleft),histRE_relK->FindBin(normright));
+    double IntegralME = histME_relK->Integral(histME_relK->FindBin(normleft),histME_relK->FindBin(normright));
+     norm_relK =  IntegralSE/IntegralME;
+
+    std::cout << IntegralSE << '\t' << IntegralME << '\t' << norm_relK << std::endl;
     Hist_CF->Divide(histRE_relK,histME_relK,1,norm_relK);
   }
   else {
@@ -354,6 +356,23 @@ void Rebinned(TH1F* InputppSE, TH1F* InputppME, TH1F* InputApApSE, TH1F* InputAp
   TH1F* ApApSE=(TH1F*)InputApApSE->Clone("ApApSE");
   TH1F* ApApME=(TH1F*)InputApApME->Clone("ApApME");
 
+  TH1F* ppSESum = (TH1F*)InputppSE->Clone("SumppSE");
+  ppSESum->Add(ApApSE);
+
+  TH1F* ppMESum = (TH1F*)InputppME->Clone("SumppME");
+  ppMESum->Add(ApApME);
+
+  TH1F* ShiftedCF_Summed[3];
+
+  ShiftForEmptyAndRebin(
+      ppSESum,ppMESum,rebin,normleft,normright,"hSummedCkNormShifted",ShiftedCF_Summed);
+
+  ppSESum->Rebin(rebin);
+  ppMESum->Rebin(rebin);
+
+  TH1F* ppApApCFSum = Calculate_CF(
+      ppSESum,ppMESum,"hCKPartSumNorm",normleft,normright,"",0);
+
   TH1F *ppApApCF[3];
   TH1F* ShiftedCF_pp[3];
 
@@ -379,6 +398,8 @@ void Rebinned(TH1F* InputppSE, TH1F* InputppME, TH1F* InputApApSE, TH1F* InputAp
   TH1F *ShiftedCF_Sum = add_CF(
       ShiftedCF_pp[2],ShiftedCF_ApAp[2],"hCkTotNormWeight_Shifted");
 
+
+
   TFile *output;
 
   output=TFile::Open(Form("CFOutput_%s_Rebin_%d.root",partPair.Data(),rebin),"RECREATE");
@@ -396,6 +417,12 @@ void Rebinned(TH1F* InputppSE, TH1F* InputppME, TH1F* InputApApSE, TH1F* InputAp
   ShiftedCF_ApAp[1]->Write();
   ShiftedCF_ApAp[2]->Write();
   ShiftedCF_Sum->Write();
+  ppSESum->Write();
+  ppMESum->Write();
+  ppApApCFSum->Write();
+  ShiftedCF_Summed[0]->Write();
+  ShiftedCF_Summed[1]->Write();
+  ShiftedCF_Summed[2]->Write();
 
   output->Close();
 
@@ -477,9 +504,9 @@ void ConvertToCats(const char *fileExp, TString partPair) {
   const float normleft = 200;
   const float normright = 400;
 
-  TDirectoryFile *dirResults=(TDirectoryFile*)(_file0->FindObjectAny("MBResults"));
+ TDirectoryFile *dirResults=(TDirectoryFile*)(_file0->FindObjectAny("HMResults"));
   TList *Results;
-  dirResults->GetObject("MBResults",Results);
+  dirResults->GetObject("HMResults",Results);
   TList* tmpFolder;
 
   TH1F *ppSE;

@@ -146,7 +146,8 @@ void plotLambda(const int flag = 0) {
 
   // Data
   TFile *file2 = TFile::Open("CombinedMap.root");
-  TH2F *sigma, *ledniSucks,*ledniSucks2;
+  TH2F *sigma, *ledniSucks;
+  TGraphAsymmErrors *ledniSucks2;
   bool GetInvLedniSucks = true;
   TFile *file3;
   if (GetInvLedniSucks) file3 = TFile::Open("Friendship.root");
@@ -155,7 +156,7 @@ void plotLambda(const int flag = 0) {
     sigma = (TH2F*)file2->Get("hGlobNsigma");
     ledniSucks = (TH2F*)file2->Get("hGlobMinCk");
     if (GetInvLedniSucks) {
-      ledniSucks2 = (TH2F*)file3->Get("invLedniSucks");
+      ledniSucks2 = (TGraphAsymmErrors*)file3->Get("invLedniSucks");
     }
   }
   // pp 13 TeV
@@ -203,8 +204,8 @@ void plotLambda(const int flag = 0) {
     contoursLedni2[1] = 3;
     contoursLedni2[2] = 5;
     contoursLedni2[3] = 14;
-    ledniSucks2->SetContour(nContoursLedni2, contoursLedni2);
-    ledniSucks2->SetFillStyle(3663);
+//    ledniSucks2->SetContour(nContoursLedni2, contoursLedni2);
+
   }
 
   // PRL C02 (2015) 022301.
@@ -412,7 +413,13 @@ void plotLambda(const int flag = 0) {
   sigma->SetLineStyle(2);
 
   if (GetInvLedniSucks) {
-    ledniSucks2->Draw("col same");
+    ledniSucks2->SetFillStyle(3344);
+    ledniSucks2->SetLineStyle(3344);
+    ledniSucks2->SetFillColorAlpha(kGray,0.7 );
+    ledniSucks2->SetLineColorAlpha(kGray,0.7 );
+
+
+    ledniSucks2->Draw("F SAME");
   } else {
     ledniSucks->Draw("cont3 same");
   }
@@ -455,11 +462,11 @@ void plotLambda(const int flag = 0) {
     sigmaLabel.DrawLatex(-1.35, 2.4, "5#kern[0.2]{#sigma}");
 
     BeamText.SetTextSize(gStyle->GetTextSize()*0.75);
-    BeamText.DrawLatex(0.6, 0.365, "ALICE Preliminary");
-    BeamText.DrawLatex(0.6, 0.32, "pp #sqrt{#it{s}} = 7 TeV");
-    BeamText.DrawLatex(0.6, 0.275, "pp #sqrt{#it{s}} = 13 TeV");
-    BeamText.DrawLatex(0.6, 0.23, "p-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV");
-    BeamText.DrawLatex(0.6, 0.185, "#Lambda#Lambda #oplus #bar{#Lambda}#bar{#Lambda} pairs");
+    BeamText.DrawLatex(0.75, 0.365, "ALICE Preliminary");
+    BeamText.DrawLatex(0.75, 0.32, "pp #sqrt{#it{s}} = 7 TeV");
+    BeamText.DrawLatex(0.75, 0.275, "pp #sqrt{#it{s}} = 13 TeV");
+    BeamText.DrawLatex(0.75, 0.23, "p-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV");
+    BeamText.DrawLatex(0.75, 0.185, "#Lambda#Lambda #oplus #bar{#Lambda}#bar{#Lambda} pairs");
   }
   if(flag == 1) {
     sigmaLabel.SetTextAngle(12.5);
