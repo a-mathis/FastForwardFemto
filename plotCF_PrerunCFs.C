@@ -270,36 +270,36 @@ void plotCF_PrerunCFs(const int RebinCF, const char *baseDirExp = "", const char
 //  float rSystErrDown = 0.009;
   //16MeV Binning
 
-  float ppBL0 =0.937473;
-  float ppBL1 =0.000279532;
-  float pLBL0 = 0.944996;
-  float pLBL1 = 0.000204381;
-  float LLBL0 = 0.947543;
-  float LLBL1 = 0.000144773;
-  float pXiBL0 = 1.05248;
-  float pXiBL1 = 1.87445e-10;
+//  float ppBL0 =0.937;
+//  float ppBL1 =0.000282;
+//  float pLBL0 = 0.946;
+//  float pLBL1 = 0.000203;
+//  float LLBL0 = 0.949;
+//  float LLBL1 = 0.000142;
+//  float pXiBL0 = 1.050;
+//  float pXiBL1 = 0;
+//
+//  float r = 1.419;
+//  float rErr = 0.011;
+//  float rSystErrUp = 0.011;
+//  float rSystErrDown = 0.006;
 
-  float r = 1.420;
-  float rErr = 0.008;
-  float rSystErrUp = 0.011;
+  //20MeV Binning
+
+  float ppBL0 =0.939;
+  float ppBL1 =0.000282;
+  float pLBL0 = 0.943;
+  float pLBL1 = 0.000206;
+  float LLBL0 = 0.947;
+  float LLBL1 = 0.000146;
+  float pXiBL0 = 1.046;
+  float pXiBL1 = 0;
+
+  float r = 1.421;
+  float rErr = 0.011;
+  float rSystErrUp = 0.01;
   float rSystErrDown = 0.007;
 
-//  //20MeV Binning
-//
-//  float ppBL0 =0.937;
-//  float ppBL1 =0.000276;
-//  float pLBL0 = 0.938;
-//  float pLBL1 = 0.000208;
-//  float LLBL0 = 0.952;
-//  float LLBL1 = 0.000136;
-//  float pXiBL0 = 1.026;
-//  float pXiBL1 = 1.15063e-10;
-//
-//  float r = 1.420;
-//  float rErr = 0.008;
-//  float rSystErrUp = 0.011;
-//  float rSystErrDown = 0.007;
-//
 
   SetStyle();
 

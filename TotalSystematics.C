@@ -14,7 +14,7 @@ static const char *prefix = "MB";
 static int nSysFiles=2;
 static bool useFit = false;
 static const char* fit = "pol2";
-static double fitRange = 1.;
+static double fitRange = 1.5;
 //Set here the names of the variations in the order they are added to the
 //output file, same for the ranges. Later this is used to loop over them, so do
 //this properly! This was created in conjunction with the AddTaskFemtoDreamSysVar,
@@ -406,7 +406,7 @@ void PlotSystematicsPerVariation(TH1F* DefaultCF, TH1F** VariationRatio,
     }
     DrawHist(ErrBudget[iVar],"k* (GeV/#it{c})","|1 - #it{C}(k*)_{variation}/#it{C}(k*)_{default}|",1,2,1.,true);
     TF1 *f1 = new TF1("f1","pol0",0,1);
-    ErrBudget[iVar]->Fit("f1","WR","",0,0.2); //does not take the errors of the ratio into account
+    ErrBudget[iVar]->Fit("f1","WR","",0,0.04); //does not take the errors of the ratio into account
     f1->Draw("SAME");
     TLatex LambdaLabel;
     LambdaLabel.SetNDC(kTRUE);
@@ -445,7 +445,7 @@ void PlottingSysErrors(TH1F* DefaultCF, TH1F* OrgCF, TGraphErrors* SysErr,
   c1->cd(2);
   c1->cd(2)->SetLeftMargin(0.2);
 
-  TF1 *fRatio = new TF1(Form("Ratio_%s",DefaultCF->GetName()), "pol2", 0, fitRange*1.5);
+  TF1 *fRatio = new TF1(Form("Ratio_%s",DefaultCF->GetName()), fit, 0.1, fitRange*1.5);
 //  StyleGraph(RelErr);
   RelErr->SetMarkerStyle(20);
   RelErr->SetTitle("Relative Error");
@@ -457,7 +457,8 @@ void PlottingSysErrors(TH1F* DefaultCF, TH1F* OrgCF, TGraphErrors* SysErr,
     RelErr->Fit(Form("Ratio_%s",DefaultCF->GetName()), "R", "", 0.01, fitRange);
     RelErr->GetXaxis()->SetRangeUser(0,0.5);
   }  else {
-    RelErr->Fit(Form("Ratio_%s",DefaultCF->GetName()), "R", "", 0.01, fitRange);
+    std::cout << "Are we here? \n";
+    RelErr->Fit(Form("Ratio_%s",DefaultCF->GetName()), "R", "", 0.05, fitRange);
     RelErr->GetXaxis()->SetRangeUser(0,0.2);
   }
   RelErr->SetMarkerStyle(20);
@@ -490,10 +491,11 @@ void PlottingSysErrors(TH1F* DefaultCF, TH1F* OrgCF, TGraphErrors* SysErr,
   grFinalError->SetMarkerStyle(20);
   grFinalError->SetLineWidth(3);
 
-  TString OutName = Form("C2total%s.root",Particle.Data());
+  TString OutName = Form("C2totalsys%s.root",Particle.Data());
   TFile *OutFile = new TFile(OutName.Data(), "RECREATE");
   hSystError->Write(Form("C2totalsys%s",Particle.Data()));
   outputParam->Write(Form("SysParam%s",Particle.Data()));
+  fRatio->Write(Form("RelSys%sUnbinned",Particle.Data()));
 
   TString CanName2 = Form("CanPlotting%s",Particle.Data());
   TCanvas *CanPlotting = new TCanvas(CanName2.Data(),CanName2.Data(),0,0,500,500);
@@ -876,12 +878,13 @@ void ProtonXiSystematic(TString FileDefault, TString *FileSystematics)
 void TotalSystematics()
 {
   TString FileDefault = "DataFullest/AnalysisResults.root";
+//  TString FileDefault = "/home/hohlweger/Analysis/TrainOutput/6_pPb_PaperProp/Data/AnalysisResults.root";
   TString FileVariations[2] = {"Systematics/AnalysisResults_1.root","Systematics/AnalysisResults_2.root"};
   //  TString FileDefault = "AnalysisResults.root";
   //  TString FileVariations[1] = {"AnalysisResults.root"};
   ProtonProtonSystematic(FileDefault,FileVariations);
-  ProtonLambdaSystematic(FileDefault,FileVariations);
-  LambdaLambdaSystematic(FileDefault,FileVariations);
-  ProtonXiSystematic(FileDefault,FileVariations);
+//  ProtonLambdaSystematic(FileDefault,FileVariations);
+//  LambdaLambdaSystematic(FileDefault,FileVariations);
+//  ProtonXiSystematic(FileDefault,FileVariations);
   return;
 }

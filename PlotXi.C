@@ -112,6 +112,76 @@ void SetStyleHisto(TH1 *histo, int marker, int color)
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // second order polynomial + double gaus to Lambda peak
+void FitTheLambda(TH1F* histo, float &signal, float
+               &signalErr, float &background, float &backgroundErr, float lowerBound,
+               float upperBound, TCanvas *c1)
+{
+  c1->cd();
+  //A solid fit.
+  double xValue1 = 1.108;
+  double yValue1 = histo->GetBinContent(histo->FindBin(xValue1));
+  double xValue2 = 1.124;
+  double yValue2 = histo->GetBinContent(histo->FindBin(xValue2));
+
+  double a1 = (yValue2-yValue1)/(xValue2-xValue1);
+  double a0 = yValue1 - a1*xValue1;
+  // parse then to proper TF1
+  TF1 *theBackground = new TF1("theBackground","pol1", 0, 1.4);
+  theBackground->SetParameter(0, a0);
+  theBackground->SetParameter(1, a1);
+
+  // remove background from signal
+  TH1F *signalOnly = getSignalHisto(theBackground, histo, xValue1, xValue2,
+                                    Form("%s_Thesignal_only", histo->GetName()));
+  // fit signal only
+  TF1 *fTheSignalSingleGauss = new TF1("fTheSignalSingleGauss", "gaus(0)",0.8*xValue1,1.2*xValue2);
+  //  signalOnly->DrawCopy();
+  signalOnly->Fit("fTheSignalSingleGauss");
+  TF1 *fTheSignalGauss = new TF1("fTheSignalGauss", "gaus(0) + gaus(3)", 0.8*xValue1,1.2*xValue2);
+  fTheSignalGauss->SetParameter(0, 0.75 * histo->GetMaximum());
+  fTheSignalGauss->SetParameter(1, fTheSignalSingleGauss->GetParameter(1));
+  fTheSignalGauss->SetParameter(2, 2.f*fTheSignalSingleGauss->GetParameter(2));
+  fTheSignalGauss->SetParLimits(2, 0.5*fTheSignalSingleGauss->GetParameter(2),1e2*2.f*fTheSignalSingleGauss->GetParameter(2));
+  fTheSignalGauss->SetParameter(3, 0.2 * histo->GetMaximum());
+  fTheSignalGauss->SetParameter(4, fTheSignalSingleGauss->GetParameter(1));
+  fTheSignalGauss->SetParLimits(4,
+                             fTheSignalSingleGauss->GetParameter(1)-fTheSignalSingleGauss->GetParameter(2),
+                             fTheSignalSingleGauss->GetParameter(1)+fTheSignalSingleGauss->GetParameter(2));
+  fTheSignalGauss->SetParameter(5, 0.5*fTheSignalSingleGauss->GetParameter(2));
+  fTheSignalGauss->SetParLimits(5, 0.5*fTheSignalSingleGauss->GetParameter(2),1e2*2.f*fTheSignalSingleGauss->GetParameter(2));
+  TFitResultPtr r = signalOnly->Fit("fTheSignalGauss", "SRQ0", "",xValue1,xValue2);
+
+  // Extract signal as integral
+  signal = fTheSignalGauss->Integral(lowerBound, upperBound)
+                /double(histo->GetBinWidth(1));
+//  signalErr = fTheSignalGauss->IntegralError(lowerBound, upperBound,
+//                                          r->GetParams(), r->GetCovarianceMatrix().GetMatrixArray())
+//                /double(histo->GetBinWidth(1));
+//  c1->cd();
+//  histo->GetXaxis()->SetRangeUser(0.8*xValue1,1.2*xValue2);
+//  histo->Draw();
+  TF1 *fTheLambda = new TF1("fTheLambda", "theBackground + fTheSignalGauss", 0.8*xValue1,1.2*xValue2);
+  fTheLambda->SetNpx(1000);
+  fTheLambda->SetParameter(2, 0.75 * histo->GetMaximum());
+  fTheLambda->SetParameter(3, fTheSignalGauss->GetParameter((1)));
+  fTheLambda->SetParameter(4, fTheSignalGauss->GetParameter((2)));
+  fTheLambda->SetParameter(5, 0.2 * histo->GetMaximum());
+  fTheLambda->SetParameter(6, fTheSignalGauss->GetParameter((4)));
+  fTheLambda->SetParameter(7, fTheSignalGauss->GetParameter((5)));
+  fTheLambda->SetLineColor(fColors[2]);
+
+  histo->Fit("fTheLambda", "SRQ", "", xValue1,xValue2);
+
+  TF1 *fTheLambda_background = new TF1("fTheLambda_background", "pol1(0)",0.8*xValue1,1.2*xValue2);
+  fTheLambda_background->SetParameter(0, fTheLambda->GetParameter(0));
+  fTheLambda_background->SetParameter(1, fTheLambda->GetParameter(1));
+  fTheLambda_background->SetLineStyle(3);
+  fTheLambda_background->SetLineColor(fColors[2]);
+
+  background = fTheLambda_background->Integral(lowerBound, upperBound)
+                /double(histo->GetBinWidth(1));
+}
+// second order polynomial + double gaus to Lambda peak
 void FitLambda(TH1F* histo, float &signal, float
                &signalErr, float &background, float &backgroundErr, float lowerBound,
                float upperBound)
@@ -199,13 +269,16 @@ void PlotXi(TString fileName, const char *prefix) {
   TGaxis::SetMaxDigits(2);
   TH2F* xiMass2D;
   TH1F* xiMass;
+  TH2F* LambdaMass2D;
+  TH1F* LambdaMass;
   TFile *file=TFile::Open(fileName.Data());
   //  file->ls();
   TString dirName="";
   dirName+=prefix;
-  dirName+="CascadeCuts";
+  dirName+="AntiCascadeCuts";
   TDirectoryFile *dirExp=(TDirectoryFile*)(file->FindObjectAny(dirName.Data()));
   TCanvas *Xi= new TCanvas("Xi","Xi",0,0,1500,1100);
+  TCanvas *Lambda= new TCanvas("Lambda","Lambda",0,0,1500,1100);
   TCanvas *PtXi= new TCanvas("PtXi","PtXi",0,0,1500,1100);
   TH1F *Purity=0;
   PtXi->Divide(4,3);
@@ -224,6 +297,9 @@ void PlotXi(TString fileName, const char *prefix) {
     }
     xiMass2D=(TH2F*)Cascade->FindObject("InvMassXi");
     xiMass=(TH1F*)xiMass2D->ProjectionY("InvMassXioneBin");
+    LambdaMass2D=(TH2F*)Cascade->FindObject("InvMassv0Pt");
+    LambdaMass = (TH1F*)LambdaMass2D->ProjectionY("InvMassLamoneBin");
+
     Purity=new TH1F("Purity","Purity",14,xiMass2D->GetXaxis()->GetBinLowEdge(1),xiMass2D->GetXaxis()->GetBinUpEdge(13));
     std::cout << xiMass2D->GetXaxis()->GetBinLowEdge(1) << '\t' << xiMass2D->GetXaxis()->GetBinUpEdge(13);
     for (int iBin = 1; iBin<13; ++iBin) {
@@ -336,4 +412,15 @@ void PlotXi(TString fileName, const char *prefix) {
   //  dummy->DrawCopy();
 //  TGaxis::SetMaxDigits(4);
   Purity->DrawCopy("p");
+  std::cout << " now the very good lambda fit. D.J.Trump \n";
+  LambdaMass->GetXaxis()->SetRangeUser(1.105,1.13);
+  lowerBound=1.116-0.005;
+  upperBound=1.116+0.005;
+  LambdaMass->GetXaxis()->SetTitle("M_{#pip} (GeV/#it{c}^{2})");
+
+  FitTheLambda(LambdaMass, signal, signalErr, background, backgroundErr, lowerBound,upperBound,Lambda);
+
+  LambdaLabel.DrawLatex(gPad->GetUxmax()-0.8, gPad->GetUymax()-0.39,
+                        Form("#splitline{#splitline{#Lambda: %.0f}{Purity = %.1f %%}}{S/B=%.1f}",
+                             signal, signal/(signal+background)*100.f,signal/background));
 }
