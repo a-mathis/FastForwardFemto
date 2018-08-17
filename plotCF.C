@@ -257,17 +257,17 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   const char *addonSim = addon;
 
   TString data = "Data";
-  TString sim = "DPMJET";
+  TString sim = "Pythia 8";
 //  TString sim = "Pythia 8";
 
-  float r = 1.437;
-  float rErr = 0.011;
-  float rSystErrUp = 0.013;
-  float rSystErrDown = 0.006;
-//  float r = 1.188;
-//  float rErr = 0.009;
-//  float rSystErrUp = 0.016;
-//  float rSystErrDown = 0.009;
+//  float r = 1.437;
+//  float rErr = 0.011;
+//  float rSystErrUp = 0.013;
+//  float rSystErrDown = 0.006;
+  float r = 1.188;
+  float rErr = 0.009;
+  float rSystErrUp = 0.016;
+  float rSystErrDown = 0.009;
 
   float ppBL0 = 0.924;
   float ppBL1 = 0.386;
@@ -303,14 +303,10 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   dirResults->GetObject(Form("%sResults%s", prefix, addon),Results);
   TList* tmpFolder=(TList*)Results->FindObject("Particle0_Particle0");
   TH1F* histRE_relK_pp = (TH1F*)tmpFolder->FindObject("SEDist_Particle0_Particle0");
-//  histRE_relK_pp->Rebin(rebinData);
   TH1F* histME_relK_pp = (TH1F*)tmpFolder->FindObject("MEDist_Particle0_Particle0");
-//  histME_relK_pp->Rebin(rebinData);
   tmpFolder=(TList*)Results->FindObject("Particle1_Particle1");
   TH1F* histRE_relK_ApAp = (TH1F*)tmpFolder->FindObject("SEDist_Particle1_Particle1");
-//  histRE_relK_ApAp->Rebin(rebinData);
   TH1F* histME_relK_ApAp = (TH1F*)tmpFolder->FindObject("MEDist_Particle1_Particle1");
-//  histME_relK_ApAp->Rebin(rebinData);
   tmpFolder=(TList*)Results->FindObject("Particle0_Particle2");
   TH1F* histRE_relK_Lp = (TH1F*)tmpFolder->FindObject("SEDist_Particle0_Particle2");
   histRE_relK_Lp->Rebin(rebinData);
@@ -408,22 +404,34 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
     TH1F* histME_relK_ApApsim = (TH1F*)tmpFolder->FindObject("MEDist_Particle1_Particle1");
     tmpFolder=(TList*)SimResults->FindObject("Particle0_Particle2");
     TH1F* histRE_relK_Lpsim = (TH1F*)tmpFolder->FindObject("SEDist_Particle0_Particle2");
+    histRE_relK_Lpsim->Rebin(rebinData);
     TH1F* histME_relK_Lpsim = (TH1F*)tmpFolder->FindObject("MEDist_Particle0_Particle2");
+    histME_relK_Lpsim->Rebin(rebinData);
     tmpFolder=(TList*)SimResults->FindObject("Particle1_Particle3");
     TH1F* histRE_relK_ALApsim = (TH1F*)tmpFolder->FindObject("SEDist_Particle1_Particle3");
+    histRE_relK_ALApsim->Rebin(rebinData);
     TH1F* histME_relK_ALApsim = (TH1F*)tmpFolder->FindObject("MEDist_Particle1_Particle3");
+    histME_relK_ALApsim->Rebin(rebinData);
     tmpFolder=(TList*)SimResults->FindObject("Particle2_Particle2");
     TH1F* histRE_relK_LLsim = (TH1F*)tmpFolder->FindObject("SEDist_Particle2_Particle2");
+    histRE_relK_LLsim->Rebin(rebinData);
     TH1F* histME_relK_LLsim = (TH1F*)tmpFolder->FindObject("MEDist_Particle2_Particle2");
+    histME_relK_LLsim->Rebin(rebinData);
     tmpFolder=(TList*)SimResults->FindObject("Particle3_Particle3");
     TH1F* histRE_relK_ALALsim = (TH1F*)tmpFolder->FindObject("SEDist_Particle3_Particle3");
+    histRE_relK_ALALsim->Rebin(rebinData);
     TH1F* histME_relK_ALALsim = (TH1F*)tmpFolder->FindObject("MEDist_Particle3_Particle3");
+    histME_relK_ALALsim->Rebin(rebinData);
     tmpFolder=(TList*)SimResults->FindObject("Particle0_Particle4");
     TH1F* histRE_relK_Xipsim = (TH1F*)tmpFolder->FindObject("SEDist_Particle0_Particle4");
+    histRE_relK_Xipsim->Rebin(rebinData);
     TH1F* histME_relK_Xipsim = (TH1F*)tmpFolder->FindObject("MEDist_Particle0_Particle4");
+    histME_relK_Xipsim->Rebin(rebinData);
     tmpFolder=(TList*)SimResults->FindObject("Particle1_Particle5");
     TH1F* histRE_relK_AXiApsim = (TH1F*)tmpFolder->FindObject("SEDist_Particle1_Particle5");
+    histRE_relK_AXiApsim->Rebin(rebinData);
     TH1F* histME_relK_AXiApsim = (TH1F*)tmpFolder->FindObject("MEDist_Particle1_Particle5");
+    histME_relK_AXiApsim->Rebin(rebinData);
 
     hist_CF_Lp_ALAp_sim[0] = Calculate_CF(histRE_relK_Lpsim,histME_relK_Lpsim,"hist_CF_Lp_sim",normleft,normright, addonSim, spinningDepth);
     hist_CF_Lp_ALAp_sim[1] = Calculate_CF(histRE_relK_ALApsim,histME_relK_ALApsim,"hist_CF_ALAp_sim",normleft,normright, addonSim, spinningDepth);
