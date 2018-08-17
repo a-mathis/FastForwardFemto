@@ -111,9 +111,11 @@ TH1F* Calculate_CF(TH1F* histRE_relK,TH1F* histME_relK, TString CFname,Double_t 
   TH1F* Hist_CF = (TH1F*)histRE_relK->Clone(CFname.Data());
   Double_t norm_relK = 0;
   if(strcmp(folder, "") == 0) {
-    double IntegralSE = histRE_relK->Integral(histRE_relK->FindBin(normleft),histRE_relK->FindBin(normright));
-    double IntegralME = histME_relK->Integral(histME_relK->FindBin(normleft),histME_relK->FindBin(normright));
-     norm_relK =  IntegralSE/IntegralME;
+    double IntegralSE =
+        histRE_relK->Integral(histRE_relK->FindBin(normleft),histRE_relK->FindBin(normright));
+    double IntegralME =
+        histME_relK->Integral(histME_relK->FindBin(normleft),histME_relK->FindBin(normright));
+    norm_relK =  IntegralSE/IntegralME;
 
     std::cout << IntegralSE << '\t' << IntegralME << '\t' << norm_relK << std::endl;
     Hist_CF->Divide(histRE_relK,histME_relK,1,norm_relK);
@@ -229,12 +231,12 @@ void ShiftForEmptyAndRebin(TH1F* InputSE, TH1F* InputME, int rebin,
   TString nameME = Form("%s_Shifted",InputME->GetName());
   int nBins = InputSE->GetXaxis()->GetNbins();
   int nBinsRebin = (int)nBins/rebin;
-//  std::cout << nBinsRebin << std::endl;
+  //  std::cout << nBinsRebin << std::endl;
   float kMin = InputSE->GetXaxis()->GetXmin();
   float kMax = InputSE->GetXaxis()->GetXmax();
   float binWidth = InputSE->GetXaxis()->GetBinWidth(1);
   float binWidthnew = binWidth*rebin;
-//  TH1F* Shifted[3];
+  //  TH1F* Shifted[3];
   int binNew=1;
   int effCounter=0;
   int nEntriesSE = 0;
@@ -245,16 +247,16 @@ void ShiftForEmptyAndRebin(TH1F* InputSE, TH1F* InputME, int rebin,
     nEntriesSE+=InputSE->GetBinContent(iBins);
     if (burnin && (nEntriesSE == 0)) {
       kMin+=binWidth;
-//      std::cout << iBins << '\t' << rebin << std::endl;
+      //      std::cout << iBins << '\t' << rebin << std::endl;
       if (iBins%rebin==0) {
         nBinsRebin--;
       }
       continue;
     } else {
       if (construct) {
-//        std::cout << kMin << '\t' << binWidthnew << '\t' << nBinsRebin << std::endl;
+        //        std::cout << kMin << '\t' << binWidthnew << '\t' << nBinsRebin << std::endl;
         kMax = kMin+binWidthnew*nBinsRebin;
-        std::cout << kMax << std::endl;
+        std::cout << kMin << '\t' << kMax << std::endl;
         output[0]=new TH1F(nameSE.Data(),nameSE.Data(),nBinsRebin,kMin,kMax);
         output[0]->Sumw2();
         output[1]=new TH1F(nameME.Data(),nameME.Data(),nBinsRebin,kMin,kMax);
@@ -280,12 +282,58 @@ void ShiftForEmptyAndRebin(TH1F* InputSE, TH1F* InputME, int rebin,
     }
   }
   output[2] = Calculate_CF(output[0],output[1],outname,normleft,normright, "", 0);
-//  output=Shifted;
+  //  output=Shifted;
 }
 //
+
+void ShiftForFixedBinAndRebin(TH1F* InputSE, TH1F* InputME, int rebin,int startBin,
+                              float normleft, float normright,
+                              TString outname, TH1F* output[3])
+{
+  TString nameSE = Form("%s_FixedShifted",InputSE->GetName());
+  TString nameME = Form("%s_FixedShifted",InputME->GetName());
+  int nBins = InputSE->GetXaxis()->GetNbins();
+  float kMin = InputSE->GetXaxis()->GetBinLowEdge(startBin);
+  float binWidth = InputSE->GetXaxis()->GetBinWidth(1);
+
+  int nBinsRebin = (int)(nBins-startBin)/rebin;
+  float binWidthnew = binWidth*rebin;
+
+  float kMax = kMin+binWidthnew*nBinsRebin;
+
+  output[0]=new TH1F(nameSE.Data(),nameSE.Data(),nBinsRebin,kMin,kMax);
+  output[0]->Sumw2();
+  output[1]=new TH1F(nameME.Data(),nameME.Data(),nBinsRebin,kMin,kMax);
+  output[1]->Sumw2();
+
+  int binNew=1;
+  int effCounter=0;
+  int nEntriesSE = 0;
+  int nEntriesME = 0;
+  for (int iBins = startBin; iBins <= nBins; ++iBins) {
+    nEntriesSE+=InputSE->GetBinContent(iBins);
+    nEntriesME+=InputME->GetBinContent(iBins);
+    effCounter++;
+
+    if (effCounter%rebin==0) {
+      output[0]->SetBinContent(binNew,nEntriesSE);
+      output[0]->SetBinError(binNew,TMath::Sqrt(nEntriesSE));
+      output[1]->SetBinContent(binNew,nEntriesME);
+      output[1]->SetBinError(binNew,TMath::Sqrt(nEntriesME));
+
+      nEntriesSE=0;
+      nEntriesME=0;
+
+      effCounter=0;
+      binNew++;
+    }
+  }
+  output[2] = Calculate_CF(output[0],output[1],outname,normleft,normright, "", 0);
+}
+
 void VariableBinningCF(TH1F* InputSE, TH1F* InputME, double relErrMin,
-                        float normleft, float normright,
-                        TString outname, TH1F* output[3]) {
+                       float normleft, float normright,
+                       TString outname, TH1F* output[3]) {
   TString nameSE = Form("%s_IndepBin",InputSE->GetName());
   TString nameME = Form("%s_IndepBin",InputME->GetName());
   if (relErrMin > 1 || relErrMin <= 0) {
@@ -301,7 +349,7 @@ void VariableBinningCF(TH1F* InputSE, TH1F* InputME, double relErrMin,
   double xMin = 0;
   for (int iBin = 1; iBin <= InputSE->GetNbinsX(); ++iBin) {
     binContentSE += InputSE->GetBinContent(iBin);
-//    make sure we omit the first few empty bins
+    //    make sure we omit the first few empty bins
     if (burnyIn && (binContentSE == 0)) {
       continue;
     } else {
@@ -310,14 +358,14 @@ void VariableBinningCF(TH1F* InputSE, TH1F* InputME, double relErrMin,
       }
       burnyIn=false;
     }
-//    as soon as we are done with this we can start looking for the number of bins we need to get the relative error of our dreams
+    //    as soon as we are done with this we can start looking for the number of bins we need to get the relative error of our dreams
     binContentME += InputME->GetBinContent(iBin);
     if (threshold < binContentSE || iBin == InputSE->GetNbinsX()) {
       // if we have enough entries to minimize our rel err create a new bin
       ySECounts.push_back(binContentSE);
       yMECounts.push_back(binContentME);
       xValues.push_back(xMin);
-//      std::cout << xMin << std::endl;
+      //      std::cout << xMin << std::endl;
       xMin = InputSE->GetXaxis()->GetBinLowEdge(iBin+1);
       binContentSE=0;
       binContentME=0;
@@ -327,12 +375,12 @@ void VariableBinningCF(TH1F* InputSE, TH1F* InputME, double relErrMin,
   const int size = xValues.size();
   float arrXval[size];
   std::copy(xValues.begin(), xValues.end(), arrXval);
-//  for (int iBin=1;iBin<=size;++iBin) {
-//    std::cout << arrXval[iBin-1] << '\t';
-//    if (iBin %20 == 0) {
-//      std::cout << std::endl;
-//    }
-//  }
+  //  for (int iBin=1;iBin<=size;++iBin) {
+  //    std::cout << arrXval[iBin-1] << '\t';
+  //    if (iBin %20 == 0) {
+  //      std::cout << std::endl;
+  //    }
+  //  }
   output[0] = new TH1F(nameSE.Data(),nameSE.Data(),size-1,arrXval);
   output[0]->Sumw2();
   output[1] = new TH1F(nameME.Data(),nameME.Data(),size-1,arrXval);
@@ -356,49 +404,54 @@ void Rebinned(TH1F* InputppSE, TH1F* InputppME, TH1F* InputApApSE, TH1F* InputAp
   TH1F* ApApSE=(TH1F*)InputApApSE->Clone("ApApSE");
   TH1F* ApApME=(TH1F*)InputApApME->Clone("ApApME");
 
-  TH1F* ppSESum = (TH1F*)InputppSE->Clone("SumppSE");
-  ppSESum->Add(ApApSE);
-
-  TH1F* ppMESum = (TH1F*)InputppME->Clone("SumppME");
-  ppMESum->Add(ApApME);
-
-  TH1F* ShiftedCF_Summed[3];
-
-  ShiftForEmptyAndRebin(
-      ppSESum,ppMESum,rebin,normleft,normright,"hSummedCkNormShifted",ShiftedCF_Summed);
-
-  ppSESum->Rebin(rebin);
-  ppMESum->Rebin(rebin);
-
-  TH1F* ppApApCFSum = Calculate_CF(
-      ppSESum,ppMESum,"hCKPartSumNorm",normleft,normright,"",0);
-
-  TH1F *ppApApCF[3];
+  //shifted binning of the CFs
   TH1F* ShiftedCF_pp[3];
 
   ShiftForEmptyAndRebin(
       ppSE,ppME,rebin,normleft,normright,"hCkPartNormShifted",ShiftedCF_pp);
 
-  ppSE->Rebin(rebin);
-  ppME->Rebin(rebin);
-  ppApApCF[0] = Calculate_CF(
-      ppSE,ppME,"hCkPartNorm",normleft,normright, "", 0);
-
   TH1F *ShiftedCF_ApAp[3];
   ShiftForEmptyAndRebin(
       ApApSE,ApApME,rebin,normleft,normright,"hCkAntiPartNormShifted",ShiftedCF_ApAp);
 
+  TH1F *ShiftedCF_Sum = add_CF(
+      ShiftedCF_pp[2],ShiftedCF_ApAp[2],"hCkTotNormWeight_Shifted");
+
+  //fix shifted binning
+  double kMin = 0;
+  if (ShiftedCF_pp[0]->GetXaxis()->GetBinLowEdge(1)<
+      ShiftedCF_ApAp[0]->GetXaxis()->GetBinLowEdge(1))
+  {
+    kMin=ShiftedCF_pp[0]->GetXaxis()->GetBinLowEdge(1);
+  } else {
+    kMin=ShiftedCF_ApAp[0]->GetXaxis()->GetBinLowEdge(1);
+  }
+  int FixedMinBin = ppSE->FindBin(kMin);
+  TH1F* FixShiftedCF_pp[3];
+  TH1F* FixShiftedCF_ApAp[3];
+
+  ShiftForFixedBinAndRebin(
+      ppSE,ppME,rebin,FixedMinBin,normleft,normright,"hCkPartNormFixShifted",FixShiftedCF_pp);
+
+  ShiftForFixedBinAndRebin(
+      ApApSE,ApApME,rebin,FixedMinBin,normleft,normright,"hCkAntiPartNormFixShifted",FixShiftedCF_ApAp);
+
+  TH1F* FixShiftedCF_Sum = add_CF(
+      FixShiftedCF_pp[2],FixShiftedCF_ApAp[2],"hCkTotNormWeight_FixShifted");
+
+  //the old CFs without shifted binning
+  TH1F *ppApApCF[3];
+
+  ppSE->Rebin(rebin);
+  ppME->Rebin(rebin);
+  ppApApCF[0] = Calculate_CF(
+      ppSE,ppME,"hCkPartNorm",normleft,normright, "", 0);
   ApApSE->Rebin(rebin);
   ApApME->Rebin(rebin);
   ppApApCF[1] = Calculate_CF(
       ApApSE,ApApME,"hCkAntiPartNorm",normleft,normright, "", 0);
   ppApApCF[2] = add_CF(
       ppApApCF[0],ppApApCF[1],"hCkTotNormWeight");
-
-  TH1F *ShiftedCF_Sum = add_CF(
-      ShiftedCF_pp[2],ShiftedCF_ApAp[2],"hCkTotNormWeight_Shifted");
-
-
 
   TFile *output;
 
@@ -417,12 +470,13 @@ void Rebinned(TH1F* InputppSE, TH1F* InputppME, TH1F* InputApApSE, TH1F* InputAp
   ShiftedCF_ApAp[1]->Write();
   ShiftedCF_ApAp[2]->Write();
   ShiftedCF_Sum->Write();
-  ppSESum->Write();
-  ppMESum->Write();
-  ppApApCFSum->Write();
-  ShiftedCF_Summed[0]->Write();
-  ShiftedCF_Summed[1]->Write();
-  ShiftedCF_Summed[2]->Write();
+  FixShiftedCF_pp[0]->Write();
+  FixShiftedCF_pp[1]->Write();
+  FixShiftedCF_pp[2]->Write();
+  FixShiftedCF_ApAp[0]->Write();
+  FixShiftedCF_ApAp[1]->Write();
+  FixShiftedCF_ApAp[2]->Write();
+  FixShiftedCF_Sum->Write();
 
   output->Close();
 
@@ -440,6 +494,13 @@ void Rebinned(TH1F* InputppSE, TH1F* InputppME, TH1F* InputApApSE, TH1F* InputAp
   delete ShiftedCF_ApAp[1];
   delete ShiftedCF_ApAp[2];
   delete ShiftedCF_Sum;
+  delete FixShiftedCF_pp[0];
+  delete FixShiftedCF_pp[1];
+  delete FixShiftedCF_pp[2];
+  delete FixShiftedCF_ApAp[0];
+  delete FixShiftedCF_ApAp[1];
+  delete FixShiftedCF_ApAp[2];
+  delete FixShiftedCF_Sum;
   delete output;
 
   return;
@@ -498,22 +559,58 @@ void BlindBinning(TH1F* InputppSE, TH1F* InputppME, TH1F* InputApApSE, TH1F* Inp
   return;
 }
 
+TH1F* ReweightMEbyMult(
+    TH2F* SEMult, TH2F* MEMult, float kSMin, float kSMax)
+{
+  TString outputName=Form("MultWeightedME");
+  int nKSbins=SEMult->GetXaxis()->GetNbins();
+  double kSMaxVal=SEMult->GetXaxis()->GetBinUpEdge(nKSbins);
+  TH1F* Output = new TH1F(outputName.Data(),outputName.Data(),nKSbins,0,kSMaxVal);
+  int firstBin=SEMult->FindBin(kSMin);
+  int lastBin=SEMult->FindBin(kSMax);
+  TH1D* MultProjSE=SEMult->ProjectionY(Form("%sMult",SEMult->GetName()),firstBin,lastBin);
+  TH1D* MultProjME=MEMult->ProjectionY(Form("%sMult",MEMult->GetName()),firstBin,lastBin);
 
-void ConvertToCats(const char *fileExp, TString partPair) {
+  int nMultBins=MEMult->GetYaxis()->GetNbins();
+  int multMax=MEMult->GetYaxis()->GetBinUpEdge(nMultBins);
+  double weight=0;
+  for (int iMult = 1;iMult<=nMultBins;++iMult) {
+    if (MultProjME->GetBinContent(iMult)>0) {
+      weight=MultProjSE->GetBinContent(iMult)/MultProjME->GetBinContent(iMult);
+    } else {
+      weight=0;
+      std::cout << "Weight = 0 for Mult Bin iMult = " << iMult << std::endl;
+    }
+    TString MultBinName=Form("MEBin%i",iMult);
+    Output->Add(MEMult->ProjectionX(MultBinName.Data(),iMult,iMult),weight);
+  }
+  return Output;
+}
+
+
+void ConvertToCats(const char *fileExp, const char* Prefix,TString partPair) {
   TFile* _file0=TFile::Open(fileExp,"READ");
   const float normleft = 200;
   const float normright = 400;
 
- TDirectoryFile *dirResults=(TDirectoryFile*)(_file0->FindObjectAny("HMResults"));
+  TDirectoryFile *dirResults=(TDirectoryFile*)(_file0->FindObjectAny(Form("%sResults",Prefix)));
   TList *Results;
-  dirResults->GetObject("HMResults",Results);
+  dirResults->GetObject(Form("%sResults",Prefix),Results);
   TList* tmpFolder;
 
   TH1F *ppSE;
   TH1F *ppME;
+  TH1F *ppMEMultWeighted;
+
+  TH2F *ppSEMult;
+  TH2F *ppMEMult;
 
   TH1F *ApApSE;
   TH1F *ApApME;
+  TH1F *ApApMEMultWeighted;
+
+  TH2F *ApApSEMult;
+  TH2F *ApApMEMult;
 
 
   TString FolderNameParticle;
@@ -540,6 +637,15 @@ void ConvertToCats(const char *fileExp, TString partPair) {
     std::cout << "No pp SE Hist \n";
   }
 
+  ppSEMult=(TH2F*)tmpFolder->FindObject(Form("SEMultDist_%s",FolderNameParticle.Data()));
+  ppMEMult=(TH2F*)tmpFolder->FindObject(Form("MEMultDist_%s",FolderNameParticle.Data()));
+
+  ppMEMultWeighted=ReweightMEbyMult(ppSEMult,ppMEMult,0.2,0.4);
+  ppMEMultWeighted=ConvertToOtherUnit(ppMEMultWeighted,1000,"hPartMeWeighed");
+
+  if (!ppMEMultWeighted) {
+    std::cout << "No pp ME Reweighted Hist \n";
+  }
   ppME = ConvertToOtherUnit(
       ((TH1F*)tmpFolder->FindObject(Form("MEDist_%s",FolderNameParticle.Data()))),
       1000,"hPartMe");
@@ -554,6 +660,15 @@ void ConvertToCats(const char *fileExp, TString partPair) {
   if (!ApApSE ) {
     std::cout << "No ApAp SE Hist \n";
   }
+  ApApSEMult=(TH2F*)tmpFolder->FindObject(Form("SEMultDist_%s",FolderNameAntiParticle.Data()));
+  ApApMEMult=(TH2F*)tmpFolder->FindObject(Form("MEMultDist_%s",FolderNameAntiParticle.Data()));
+
+  ApApMEMultWeighted=ReweightMEbyMult(ApApSEMult,ApApMEMult,0.2,0.4);
+  ApApMEMultWeighted=ConvertToOtherUnit(ApApMEMultWeighted,1000,"hAntiPartMeWeighed");
+
+  if (!ppMEMultWeighted) {
+    std::cout << "No pp ME Reweighted Hist \n";
+  }
   ApApME = ConvertToOtherUnit(
       ((TH1F*)tmpFolder->FindObject(Form("MEDist_%s",FolderNameAntiParticle.Data()))),
       1000,"hAntiPartMe");
@@ -562,13 +677,14 @@ void ConvertToCats(const char *fileExp, TString partPair) {
   }
 
   for (int iRebin = 1; iRebin < 6; ++iRebin) {
-//    if (iRebin == 4) continue;
     Rebinned(ppSE,ppME,ApApSE,ApApME,iRebin,partPair);
+    TString MEReweightedName=Form("%sMEReweighted",partPair.Data());
+    Rebinned(ppSE,ppMEMultWeighted,ApApSE,ApApMEMultWeighted,iRebin,MEReweightedName);
   }
-  float confLevel = 0.1;
-  for (int iCon = 0; iCon < 5; ++iCon ) {
-    BlindBinning(ppSE,ppME,ApApSE,ApApME,confLevel,partPair);
-    confLevel+=0.05;
-  }
+  //  float confLevel = 0.1;
+  //  for (int iCon = 0; iCon < 5; ++iCon ) {
+  //    BlindBinning(ppSE,ppME,ApApSE,ApApME,confLevel,partPair);
+  //    confLevel+=0.05;
+  //  }
   return; 
 }
