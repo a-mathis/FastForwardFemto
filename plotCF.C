@@ -296,6 +296,10 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   }
   SetStyle();
 
+  // Output for the pair statistics
+  std::cout << "+++++++++++++++ \n";
+  std::cout << "Pair statistics \n";
+  std::cout << " Pair \t|\t full \t|\t k* < 0.2 GeV/c \n";
   // EXP DATA
   TFile* _file0=TFile::Open(expfile);
   TDirectoryFile *dirResults=(TDirectoryFile*)(_file0->FindObjectAny(Form("%sResults%s", prefix, addon)));
@@ -303,37 +307,45 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   dirResults->GetObject(Form("%sResults%s", prefix, addon),Results);
   TList* tmpFolder=(TList*)Results->FindObject("Particle0_Particle0");
   TH1F* histRE_relK_pp = (TH1F*)tmpFolder->FindObject("SEDist_Particle0_Particle0");
+  std::cout << " pp \t|\t" << histRE_relK_pp->GetEntries() << "\t|\t" << histRE_relK_pp->Integral(histRE_relK_pp->FindBin(0.001), histRE_relK_pp->FindBin(0.2)) << "\n";
   TH1F* histME_relK_pp = (TH1F*)tmpFolder->FindObject("MEDist_Particle0_Particle0");
   tmpFolder=(TList*)Results->FindObject("Particle1_Particle1");
   TH1F* histRE_relK_ApAp = (TH1F*)tmpFolder->FindObject("SEDist_Particle1_Particle1");
+  std::cout << " apap \t|\t" << histRE_relK_ApAp->GetEntries() << "\t|\t" << histRE_relK_ApAp->Integral(histRE_relK_ApAp->FindBin(0.001), histRE_relK_ApAp->FindBin(0.2)) << "\n";
   TH1F* histME_relK_ApAp = (TH1F*)tmpFolder->FindObject("MEDist_Particle1_Particle1");
   tmpFolder=(TList*)Results->FindObject("Particle0_Particle2");
   TH1F* histRE_relK_Lp = (TH1F*)tmpFolder->FindObject("SEDist_Particle0_Particle2");
+  std::cout << " pL \t|\t" << histRE_relK_Lp->GetEntries() << "\t|\t" << histRE_relK_Lp->Integral(histRE_relK_Lp->FindBin(0.001), histRE_relK_Lp->FindBin(0.2)) << "\n";
   histRE_relK_Lp->Rebin(rebinData);
   TH1F* histME_relK_Lp = (TH1F*)tmpFolder->FindObject("MEDist_Particle0_Particle2");
   histME_relK_Lp->Rebin(rebinData);
   tmpFolder=(TList*)Results->FindObject("Particle1_Particle3");
   TH1F* histRE_relK_ALAp = (TH1F*)tmpFolder->FindObject("SEDist_Particle1_Particle3");
+  std::cout << " apaL \t|\t" << histRE_relK_ALAp->GetEntries() << "\t|\t" << histRE_relK_ALAp->Integral(histRE_relK_ALAp->FindBin(0.001), histRE_relK_ALAp->FindBin(0.2)) << "\n";
   histRE_relK_ALAp->Rebin(rebinData);
   TH1F* histME_relK_ALAp = (TH1F*)tmpFolder->FindObject("MEDist_Particle1_Particle3");
   histME_relK_ALAp->Rebin(rebinData);
   tmpFolder=(TList*)Results->FindObject("Particle2_Particle2");
   TH1F* histRE_relK_LL = (TH1F*)tmpFolder->FindObject("SEDist_Particle2_Particle2");
+  std::cout << " LL \t|\t" << histRE_relK_LL->GetEntries() << "\t|\t" << histRE_relK_LL->Integral(histRE_relK_LL->FindBin(0.001), histRE_relK_LL->FindBin(0.2)) << "\n";
   histRE_relK_LL->Rebin(rebinData);
   TH1F* histME_relK_LL = (TH1F*)tmpFolder->FindObject("MEDist_Particle2_Particle2");
   histME_relK_LL->Rebin(rebinData);
   tmpFolder=(TList*)Results->FindObject("Particle3_Particle3");
   TH1F* histRE_relK_ALAL = (TH1F*)tmpFolder->FindObject("SEDist_Particle3_Particle3");
+  std::cout << " aLaL \t|\t" << histRE_relK_ALAL->GetEntries() << "\t|\t" << histRE_relK_ALAL->Integral(histRE_relK_ALAL->FindBin(0.001), histRE_relK_ALAL->FindBin(0.2)) << "\n";
   histRE_relK_ALAL->Rebin(rebinData);
   TH1F* histME_relK_ALAL = (TH1F*)tmpFolder->FindObject("MEDist_Particle3_Particle3");
   histME_relK_ALAL->Rebin(rebinData);
   tmpFolder=(TList*)Results->FindObject("Particle0_Particle4");
   TH1F* histRE_relK_Xip = (TH1F*)tmpFolder->FindObject("SEDist_Particle0_Particle4");
+  std::cout << " pXi \t|\t" << histRE_relK_Xip->GetEntries() << "\t|\t" << histRE_relK_Xip->Integral(histRE_relK_Xip->FindBin(0.001), histRE_relK_Xip->FindBin(0.2)) << "\n";
   histRE_relK_Xip->Rebin(rebinData);
   TH1F* histME_relK_Xip = (TH1F*)tmpFolder->FindObject("MEDist_Particle0_Particle4");
   histME_relK_Xip->Rebin(rebinData);
   tmpFolder=(TList*)Results->FindObject("Particle1_Particle5");
   TH1F* histRE_relK_AXiAp = (TH1F*)tmpFolder->FindObject("SEDist_Particle1_Particle5");
+  std::cout << " apaXi \t|\t" << histRE_relK_AXiAp->GetEntries() << "\t|\t" << histRE_relK_AXiAp->Integral(histRE_relK_AXiAp->FindBin(0.001), histRE_relK_AXiAp->FindBin(0.2)) << "\n";
   histRE_relK_AXiAp->Rebin(rebinData);
   TH1F* histME_relK_AXiAp = (TH1F*)tmpFolder->FindObject("MEDist_Particle1_Particle5");
   histME_relK_AXiAp->Rebin(rebinData);
@@ -341,6 +353,8 @@ void plotCF(const char *expfile = "~/Results/LHC17p_fast/AnalysisResults.root", 
   TH1F *hist_CF_LL_ALAL_exp[3];
   TH1F *hist_CF_pp_ApAp_exp[3];
   TH1F *hist_CF_pXi_ApAXi_exp[3];
+
+
 
   hist_CF_Lp_ALAp_exp[0] = Calculate_CF(histRE_relK_Lp,histME_relK_Lp,"hist_CF_Lp_exp",normleft,normright, addon, spinningDepth);
   hist_CF_Lp_ALAp_exp[1] = Calculate_CF(histRE_relK_ALAp,histME_relK_ALAp,"hist_CF_ALAp_exp",normleft,normright, addon, spinningDepth);
