@@ -132,6 +132,16 @@ TH1F* Calculate_CF(TH1F* histRE_relK, TH1F* histME_relK, TString CFname,
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+TH1F *RatioUncertainties(TH1F *histOld, TH1F *histNew) {
+  TH1F *hist = (TH1F*)histNew->Clone(Form("%s_Clone", histNew->GetName()));
+  hist->GetYaxis()->SetTitle("Ratio uncertainties old/new");
+  for(int i = 0; i<hist->GetNbinsX(); ++i) {
+    hist->SetBinContent(i+1, histOld->GetBinError(i+1) / histNew->GetBinError(i+1));
+  }
+  return hist;
+}
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 TH1F* add_CF(TH1F* hist_CF1, TH1F* hist_CF2, TString HistName) {
   // Calculate CFs with error weighting
   TH1F* hist_CF_sum = (TH1F*)hist_CF1->Clone(HistName.Data());
@@ -475,6 +485,15 @@ void compareCF(const char* expfile = "~/Results/LHC17p_fast/AnalysisResults.root
   SetStyleHisto(hist_CF_LL_ALAL_old[2], 1, 2);
   SetStyleHisto(hist_CF_pXi_ApAXi_old[2], 1, 2);
 
+  auto hist_ratio_uncert_pp = RatioUncertainties(hist_CF_pp_ApAp_old[2], hist_CF_pp_ApAp_exp[2]);
+  auto hist_ratio_uncert_pL = RatioUncertainties(hist_CF_Lp_ALAp_old[2], hist_CF_Lp_ALAp_exp[2]);
+  auto hist_ratio_uncert_LL = RatioUncertainties(hist_CF_LL_ALAL_old[2], hist_CF_LL_ALAL_exp[2]);
+  auto hist_ratio_uncert_pXi = RatioUncertainties(hist_CF_pXi_ApAXi_old[2], hist_CF_pXi_ApAXi_exp[2]);
+  SetStyleHisto(hist_ratio_uncert_pp, 0, 0);
+  SetStyleHisto(hist_ratio_uncert_pL, 0, 0);
+  SetStyleHisto(hist_ratio_uncert_LL, 0, 0);
+  SetStyleHisto(hist_ratio_uncert_pXi, 0, 0);
+
   // PLOTTING
   TCanvas* Can_CF = new TCanvas("Can_CF", "Can_CF", 0, 0, 2000, 1100);
   Can_CF->Divide(4, 2);
@@ -562,4 +581,28 @@ void compareCF(const char* expfile = "~/Results/LHC17p_fast/AnalysisResults.root
   pXiRatio->Draw("pe");
   line->Draw("same");
   Can_CF->Print("ANplot/CF_old-new.pdf");
+
+  TCanvas* Can_Uncertainties = new TCanvas("Can_Uncertainties", "Can_Uncertainties", 0, 0, 2000, 1100);
+  Can_Uncertainties->Divide(4,1);
+  Can_Uncertainties->cd(1);
+  Can_Uncertainties->cd(1)->SetRightMargin(right);
+  Can_Uncertainties->cd(1)->SetTopMargin(top);
+  hist_ratio_uncert_pp->Draw("pe");
+  hist_ratio_uncert_pp->GetXaxis()->SetRangeUser(0, 0.4);
+  Can_Uncertainties->cd(2);
+  Can_Uncertainties->cd(2)->SetRightMargin(right);
+  Can_Uncertainties->cd(2)->SetTopMargin(top);
+  hist_ratio_uncert_pL->Draw("pe");
+  hist_ratio_uncert_pL->GetXaxis()->SetRangeUser(0, 0.4);
+  Can_Uncertainties->cd(3);
+  Can_Uncertainties->cd(3)->SetRightMargin(right);
+  Can_Uncertainties->cd(3)->SetTopMargin(top);
+  hist_ratio_uncert_LL->Draw("pe");
+  hist_ratio_uncert_LL->GetXaxis()->SetRangeUser(0, 0.4);
+  Can_Uncertainties->cd(4);
+  Can_Uncertainties->cd(4)->SetRightMargin(right);
+  Can_Uncertainties->cd(4)->SetTopMargin(top);
+  hist_ratio_uncert_pXi->Draw("pe");
+  hist_ratio_uncert_pXi->GetXaxis()->SetRangeUser(0, 0.4);
+
 }

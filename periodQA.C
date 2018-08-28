@@ -221,7 +221,7 @@ void FitXi(TH1F* histo, float &signal, float
    // fit signal only
    TF1 *fSignalSingleGauss = new TF1("fSignalSingleGauss", "gaus(0)",1.31,1.34);
    //  signalOnly->DrawCopy();
-   signalOnly->Fit("fSignalSingleGauss");
+   signalOnly->Fit("fSignalSingleGauss", "Q");
    TF1 *fSignalGauss = new TF1("fSignalGauss", "gaus(0) + gaus(3)", 1.3,
                                1.4);
    fSignalGauss->SetParameter(0, 0.75 * histo->GetMaximum());
@@ -302,6 +302,10 @@ void periodQA(const char *path = ".", const char *prefix = "MB", const char *add
   auto grNAntiLambda = new TGraphErrors();
   auto grPurityLambda = new TGraphErrors();
   auto grPurityAntiLambda = new TGraphErrors();
+  auto grMeanLambda = new TGraphErrors();
+  auto grMeanAntiLambda = new TGraphErrors();
+  auto grSigmaLambda = new TGraphErrors();
+  auto grSigmaAntiLambda = new TGraphErrors();
   auto grNXi = new TGraphErrors();
   auto grNAntiXi = new TGraphErrors();
   auto grPurityXi = new TGraphErrors();
@@ -324,7 +328,8 @@ void periodQA(const char *path = ".", const char *prefix = "MB", const char *add
     TList *EvtCuts;
     dirEvtCuts->GetObject(Form("%sEvtCuts%s", prefix, addon), EvtCuts);
     auto hEvtCounter = (TH1F*)EvtCuts->FindObject("EventCounter");
-    const float nEvt = hEvtCounter->GetBinContent(hEvtCounter->GetNbinsX());
+//    const float nEvt = hEvtCounter->GetBinContent(hEvtCounter->GetNbinsX());
+    const float nEvt = hEvtCounter->GetBinContent(2);
 
     auto dirTrackCuts=(TDirectoryFile*)(_file0->FindObjectAny(Form("%sTrackCuts%s", prefix, addon)));
     TList *TrackCuts;
@@ -349,6 +354,16 @@ void periodQA(const char *path = ".", const char *prefix = "MB", const char *add
     auto hNLambda = (TH1F*)tmpFolder->FindObject("pTDist_after");
     const float nLambda = hNLambda->GetEntries();
     FitLambda(hLambdaMass, signal, signalErr, background, backgroundErr, lambdaLower, lambdaUpper);
+    auto signalFit = (TF1*)hLambdaMass->GetListOfFunctions()->FindObject("fLambda");
+    float mean2 = signalFit->GetParameter(4);
+    float sigma2 = signalFit->GetParameter(5);
+    float mean2err = signalFit->GetParError(4);
+    float sigma2err = signalFit->GetParError(5);
+    const float meanLambda = mean2;
+    const float meanLambdaErr = mean2err;
+    const float sigmaLambda = std::abs(sigma2);
+    const float sigmaLambdaErr = std::abs(sigma2err);
+
     const float purityLambda = signal/(signal+background);
     const float purityLambdaErr = std::sqrt( signalErr*signalErr*background*background/std::pow(signal+background, 4) + backgroundErr*backgroundErr*signal*signal/std::pow(signal+background, 4) );
 
@@ -363,6 +378,15 @@ void periodQA(const char *path = ".", const char *prefix = "MB", const char *add
     FitLambda(hAntiLambdaMass, signal, signalErr, background, backgroundErr, lambdaLower, lambdaUpper);
     const float purityAntiLambda = signal/(signal+background);
     const float purityAntiLambdaErr = std::sqrt( signalErr*signalErr*background*background/std::pow(signal+background, 4) + backgroundErr*backgroundErr*signal*signal/std::pow(signal+background, 4) );
+    signalFit = (TF1*)hAntiLambdaMass->GetListOfFunctions()->FindObject("fLambda");
+    mean2 = signalFit->GetParameter(4);
+    sigma2 = signalFit->GetParameter(5);
+    mean2err = signalFit->GetParError(4);
+    sigma2err = signalFit->GetParError(5);
+    const float meanAntiLambda = mean2;
+    const float meanAntiLambdaErr = mean2err;
+    const float sigmaAntiLambda = std::abs(sigma2);
+    const float sigmaAntiLambdaErr = std::abs(sigma2err);
 
     auto dirCascadeCuts=(TDirectoryFile*)(_file0->FindObjectAny(Form("%sCascadeCuts%s", prefix, addon)));
     TList *CascadeCuts;
@@ -396,9 +420,17 @@ void periodQA(const char *path = ".", const char *prefix = "MB", const char *add
     grNLambda->SetPoint(counter, p, nLambda/nEvt);
     grPurityLambda->SetPoint(counter, p, purityLambda * 100.f);
     grPurityLambda->SetPointError(counter, 0, purityLambdaErr * 100.f);
+    grMeanLambda->SetPoint(counter, p, meanLambda);
+    grMeanLambda->SetPointError(counter, 0, meanLambdaErr);
+    grSigmaLambda->SetPoint(counter, p, sigmaLambda);
+    grSigmaLambda->SetPointError(counter, 0, sigmaLambdaErr);
     grNAntiLambda->SetPoint(counter, p, nAntiLambda/nEvt);
     grPurityAntiLambda->SetPoint(counter, p, purityAntiLambda * 100.f);
     grPurityAntiLambda->SetPointError(counter, 0, purityAntiLambdaErr * 100.f);
+    grMeanAntiLambda->SetPoint(counter, p, meanAntiLambda);
+    grMeanAntiLambda->SetPointError(counter, 0, meanAntiLambdaErr);
+    grSigmaAntiLambda->SetPoint(counter, p, sigmaAntiLambda);
+    grSigmaAntiLambda->SetPointError(counter, 0, sigmaAntiLambdaErr);
     grNXi->SetPoint(counter, p, nXi/nEvt);
     grPurityXi->SetPoint(counter, p, purityXi * 100.f);
     grPurityXi->SetPointError(counter, 0, purityXiErr * 100.f);
@@ -457,6 +489,24 @@ void periodQA(const char *path = ".", const char *prefix = "MB", const char *add
   histPeriod->SetMinimum(80);
   purityLambda->Print("PeriodQA/PurityLambda.pdf");
 
+  auto meanLambda = new TCanvas();
+  histPeriod->Draw();
+  histPeriod->SetTitle("; ; #mu (#Lambda) (GeV/#it{c}^{2})");
+  SetStyleGraph(grMeanLambda, 0, 1);
+  grMeanLambda->Draw("pez");
+  histPeriod->SetMaximum(1.13);
+  histPeriod->SetMinimum(1.1);
+  meanLambda->Print("PeriodQA/MeanLambda.pdf");
+
+  auto sigmaLambda = new TCanvas();
+  histPeriod->Draw();
+  histPeriod->SetTitle("; ; #sigma (#Lambda) (GeV/#it{c}^{2})");
+  SetStyleGraph(grSigmaLambda, 0, 1);
+  grSigmaLambda->Draw("pez");
+  histPeriod->SetMaximum(0.005);
+  histPeriod->SetMinimum(0);
+  sigmaLambda->Print("PeriodQA/SigmaLambda.pdf");
+
   auto nAntiLambda = new TCanvas();
   histPeriod->Draw();
   histPeriod->SetTitle("; ; #(#bar{#Lambda})/evt.");
@@ -474,6 +524,24 @@ void periodQA(const char *path = ".", const char *prefix = "MB", const char *add
   histPeriod->SetMaximum(105);
   histPeriod->SetMinimum(80);
   purityAntiLambda->Print("PeriodQA/PurityAntiLambda.pdf");
+
+  auto meanAntiLambda = new TCanvas();
+  histPeriod->Draw();
+  histPeriod->SetTitle("; ; #mu (#bar{#Lambda}) (GeV/#it{c}^{2})");
+  SetStyleGraph(grMeanAntiLambda, 0, 1);
+  grMeanAntiLambda->Draw("pez");
+  histPeriod->SetMaximum(1.13);
+  histPeriod->SetMinimum(1.1);
+  meanAntiLambda->Print("PeriodQA/MeanAntiLambda.pdf");
+
+  auto sigmaAntiLambda = new TCanvas();
+  histPeriod->Draw();
+  histPeriod->SetTitle("; ; #sigma (#bar{#Lambda}) (GeV/#it{c}^{2})");
+  SetStyleGraph(grSigmaAntiLambda, 0, 1);
+  grSigmaAntiLambda->Draw("pez");
+  histPeriod->SetMaximum(0.005);
+  histPeriod->SetMinimum(0);
+  sigmaAntiLambda->Print("PeriodQA/SigmaAntiLambda.pdf");
 
   auto nXi = new TCanvas();
   histPeriod->Draw();
