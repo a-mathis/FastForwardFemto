@@ -14,7 +14,7 @@ static const char *prefix = "MB";
 static int nSysFiles=2;
 static bool useFit = false;
 static const char* fit = "pol2";
-static double fitRange = 1.5;
+static double fitRange = 0.6;
 //Set here the names of the variations in the order they are added to the
 //output file, same for the ranges. Later this is used to loop over them, so do
 //this properly! This was created in conjunction with the AddTaskFemtoDreamSysVar,
@@ -406,12 +406,12 @@ void PlotSystematicsPerVariation(TH1F* DefaultCF, TH1F** VariationRatio,
     }
     DrawHist(ErrBudget[iVar],"k* (GeV/#it{c})","|1 - #it{C}(k*)_{variation}/#it{C}(k*)_{default}|",1,2,1.,true);
     TF1 *f1 = new TF1("f1","pol0",0,1);
-    ErrBudget[iVar]->Fit("f1","WR","",0,0.04); //does not take the errors of the ratio into account
+    ErrBudget[iVar]->Fit("f1","WRQ","",0,0.04); //does not take the errors of the ratio into account
     f1->Draw("SAME");
     TLatex LambdaLabel;
     LambdaLabel.SetNDC(kTRUE);
     LambdaLabel.SetTextSize(gStyle->GetTextSize()*1.2);
-    LambdaLabel.DrawLatex(gPad->GetUxmax()-0.8, gPad->GetUymax()-0.39,Form("Par Fit: %.2f",f1->GetParameter(0)*100));
+    LambdaLabel.DrawLatex(gPad->GetUxmax()-0.8, gPad->GetUymax()-0.39,Form("Rel. error budget: %.2f %%",f1->GetParameter(0)*100));
 
     cAbsErr->cd(iVar+1);
     AbsErr[iVar]->SetTitle(VarName[iVar]);
@@ -422,9 +422,9 @@ void PlotSystematicsPerVariation(TH1F* DefaultCF, TH1F** VariationRatio,
     }
     TF1 *f2 = new TF1("f2","pol0",0,1);
     DrawHist(AbsErr[iVar],"k* (GeV/#it{c})","|#it{C}(k*)_{default} - #it{C}(k*)_{variation}|",1,2,1.,true);
-    AbsErr[iVar]->Fit("f2","WR","",0,0.04); //does not take the errors of the ratio into account
+    AbsErr[iVar]->Fit("f2","WRQ","",0,0.04); //does not take the errors of the ratio into account
     f2->Draw("SAME");
-    LambdaLabel.DrawLatex(gPad->GetUxmax()-0.8, gPad->GetUymax()-0.39,Form("Par Fit: %.2f",f2->GetParameter(0)));
+    LambdaLabel.DrawLatex(gPad->GetUxmax()-0.8, gPad->GetUymax()-0.39,Form("Abs. error budget: %.2f",f2->GetParameter(0)));
   }
   cAbsErr->SaveAs(Form("AbsoluteErr%s.pdf",Particle.Data()));
   cErrBudget->SaveAs(Form("Budget%s.pdf",Particle.Data()));
@@ -438,14 +438,15 @@ void PlottingSysErrors(TH1F* DefaultCF, TH1F* OrgCF, TGraphErrors* SysErr,
   c1->Divide(2,1);
   c1->cd(1);
   c1->cd(1)->SetLeftMargin(0.1);
-  c1->cd(1)->SetRightMargin(0.01);
+  c1->cd(1)->SetRightMargin(0);
   DrawHist(DefaultCF,"k* (GeV/#it{c})","#it{C}(k*)",0,1,1.,true);
   SysErr->SetFillStyle(0);
   SysErr->Draw("2same");
   c1->cd(2);
   c1->cd(2)->SetLeftMargin(0.2);
 
-  TF1 *fRatio = new TF1(Form("Ratio_%s",DefaultCF->GetName()), fit, 0.1, fitRange*1.5);
+  TF1 *fRatio = new TF1(Form("Ratio_%s",DefaultCF->GetName()), fit, 0., fitRange*1.5);
+
 //  StyleGraph(RelErr);
   RelErr->SetMarkerStyle(20);
   RelErr->SetTitle("Relative Error");
@@ -454,12 +455,12 @@ void PlottingSysErrors(TH1F* DefaultCF, TH1F* OrgCF, TGraphErrors* SysErr,
   if (Particle!="PP") {
     fRatio->SetParameter(2,100);
     fRatio->SetParLimits(2,0,1e6);
-    RelErr->Fit(Form("Ratio_%s",DefaultCF->GetName()), "R", "", 0.01, fitRange);
+    RelErr->Fit(Form("Ratio_%s",DefaultCF->GetName()), "R", "", 0., fitRange);
     RelErr->GetXaxis()->SetRangeUser(0,0.5);
   }  else {
     std::cout << "Are we here? \n";
-    RelErr->Fit(Form("Ratio_%s",DefaultCF->GetName()), "R", "", 0.05, fitRange);
-    RelErr->GetXaxis()->SetRangeUser(0,0.2);
+    RelErr->Fit(Form("Ratio_%s",DefaultCF->GetName()), "R", "", 0.06, fitRange);
+    RelErr->GetXaxis()->SetRangeUser(0,0.5);
   }
   RelErr->SetMarkerStyle(20);
 
@@ -484,7 +485,15 @@ void PlottingSysErrors(TH1F* DefaultCF, TH1F* OrgCF, TGraphErrors* SysErr,
     const float x = OrgCF->GetBinCenter(kstarBin+1);
     const float y = OrgCF->GetBinContent(kstarBin+1);
     grFinalError->SetPoint(kstarBin, x, y);
-    grFinalError->SetPointError(kstarBin, xerr,  y * fRatio->Eval(x));
+    float errY = y * fRatio->Eval(x);
+
+    // for the pp case we cannot fit the first bin at the moment, hence we use here the actual point, and for the rest the fit
+    if (Particle=="PP" && kstarBin == 0) {
+      double tx, ty;
+      RelErr->GetPoint(kstarBin, tx, ty);
+      errY = ty;
+    }
+    grFinalError->SetPointError(kstarBin, xerr, errY);
     hSystError->Fill(x, y * fRatio->Eval(x));
   }
   grFinalError->SetFillColor(kGray+1);
@@ -572,7 +581,7 @@ void ProtonProtonSystematic(TString FileDefault, TString *FileSystematics)
   const int EffVariations=5;
   double addMeUp[EffVariations];
   TGraphErrors *graphSysErr = new TGraphErrors();
-  TGraph *graphRelErr = new TGraph(nBins);
+  TGraph *graphRelErr = new TGraph();
   for (int iKstar=1;iKstar<nBins;++iKstar) {
     double SysErrTotal = 0;
     addMeUp[0] = (AbsErr[0]->GetBinContent(iKstar)+AbsErr[1]->GetBinContent(iKstar))/2.;//pT
@@ -588,13 +597,13 @@ void ProtonProtonSystematic(TString FileDefault, TString *FileSystematics)
     }
     SysErrTotal=TMath::Sqrt(SysErrTotal);
     double xValue=ProtonDefault->GetBinCenter(iKstar);
-    graphSysErr->SetPoint(iKstar,xValue,ProtonDefault->GetBinContent(iKstar));
-    graphSysErr->SetPointError(iKstar, ProtonDefault->GetBinWidth(1)/2.,SysErrTotal);
+    graphSysErr->SetPoint(iKstar-1,xValue,ProtonDefault->GetBinContent(iKstar));
+    graphSysErr->SetPointError(iKstar-1, ProtonDefault->GetBinWidth(1)/2.,SysErrTotal);
     double relErr = SysErrTotal/ProtonDefault->GetBinContent(iKstar);
-    graphRelErr->SetPoint(iKstar,xValue,relErr);
+    graphRelErr->SetPoint(iKstar-1,xValue,relErr);
   }
   ProtonDefault->SetTitle("p-p #oplus #bar{p}#bar{p}");
-  ProtonDefault->GetXaxis()->SetRangeUser(0, 0.13);
+  ProtonDefault->GetXaxis()->SetRangeUser(0, 0.5);
   ProtonDefault->GetYaxis()->SetRangeUser(0.85,2.2);
   ProtonDefault->GetYaxis()->SetTitleOffset(1.2);
   PlottingSysErrors(ProtonDefault,ProtonOriginal,graphSysErr,graphRelErr,"PP");
@@ -653,7 +662,7 @@ void ProtonLambdaSystematic(TString FileDefault, TString *FileSystematics)
   const int EffVariations=12;
   double addMeUp[EffVariations];
   TGraphErrors *graphSysErr = new TGraphErrors();
-  TGraph *graphRelErr = new TGraph(nBins);
+  TGraph *graphRelErr = new TGraph();
   for (int iKstar=1;iKstar<nBins;++iKstar) {
     double SysErrTotal = 0;
     addMeUp[0] = (AbsErr[0]->GetBinContent(iKstar)+AbsErr[1]->GetBinContent(iKstar))/2.;//pT
@@ -673,10 +682,10 @@ void ProtonLambdaSystematic(TString FileDefault, TString *FileSystematics)
     }
     SysErrTotal=TMath::Sqrt(SysErrTotal);
     double xValue=ProtonLambdaDefault->GetBinCenter(iKstar);
-    graphSysErr->SetPoint(iKstar,xValue,ProtonLambdaDefault->GetBinContent(iKstar));
-    graphSysErr->SetPointError(iKstar, ProtonLambdaDefault->GetBinWidth(1)/2.,SysErrTotal);
+    graphSysErr->SetPoint(iKstar-1,xValue,ProtonLambdaDefault->GetBinContent(iKstar));
+    graphSysErr->SetPointError(iKstar-1, ProtonLambdaDefault->GetBinWidth(1)/2.,SysErrTotal);
     double relErr = SysErrTotal/ProtonLambdaDefault->GetBinContent(iKstar);
-    graphRelErr->SetPoint(iKstar,xValue,relErr);
+    graphRelErr->SetPoint(iKstar-1,xValue,relErr);
   }
   ProtonLambdaDefault->SetTitle("p-#Lambda #oplus #bar{p}#bar{#Lambda}");
   ProtonLambdaDefault->GetXaxis()->SetRangeUser(0, 0.5);
@@ -740,7 +749,7 @@ void LambdaLambdaSystematic(TString FileDefault, TString *FileSystematics)
   const int EffVariations=7;
   double addMeUp[EffVariations];
   TGraphErrors *graphSysErr = new TGraphErrors();
-  TGraph *graphRelErr = new TGraph(nBins);
+  TGraph *graphRelErr = new TGraph();
   for (int iKstar=1;iKstar<nBins;++iKstar) {
     double SysErrTotal = 0;
     addMeUp[0] = (AbsErr[0]->GetBinContent(iKstar)+AbsErr[1]->GetBinContent(iKstar))/2.;//V0 pT
@@ -755,10 +764,10 @@ void LambdaLambdaSystematic(TString FileDefault, TString *FileSystematics)
     }
     SysErrTotal=TMath::Sqrt(SysErrTotal);
     double xValue=LambdaDefault->GetBinCenter(iKstar);
-    graphSysErr->SetPoint(iKstar,xValue,LambdaDefault->GetBinContent(iKstar));
-    graphSysErr->SetPointError(iKstar, LambdaDefault->GetBinWidth(1)/2.,SysErrTotal);
+    graphSysErr->SetPoint(iKstar-1,xValue,LambdaDefault->GetBinContent(iKstar));
+    graphSysErr->SetPointError(iKstar-1, LambdaDefault->GetBinWidth(1)/2.,SysErrTotal);
     double relErr = SysErrTotal/LambdaDefault->GetBinContent(iKstar);
-    graphRelErr->SetPoint(iKstar,xValue,relErr);
+    graphRelErr->SetPoint(iKstar-1,xValue,relErr);
   }
   LambdaDefault->SetTitle("#Lambda-#Lambda #oplus #bar{#Lambda}#bar{#Lambda}");
   LambdaDefault->GetXaxis()->SetRangeUser(0, 0.5);
@@ -837,7 +846,7 @@ void ProtonXiSystematic(TString FileDefault, TString *FileSystematics)
   const int EffVariations=17;
   double addMeUp[EffVariations];
   TGraphErrors *graphSysErr = new TGraphErrors();
-  TGraph *graphRelErr = new TGraph(nBins);
+  TGraph *graphRelErr = new TGraph();
   for (int iKstar=1;iKstar<nBins;++iKstar) {
     double SysErrTotal = 0;
     addMeUp[0] = (AbsErr[0]->GetBinContent(iKstar)+AbsErr[1]->GetBinContent(iKstar))/2.;//pT
@@ -862,10 +871,10 @@ void ProtonXiSystematic(TString FileDefault, TString *FileSystematics)
     }
     SysErrTotal=TMath::Sqrt(SysErrTotal);
     double xValue=ProtonXiDefault->GetBinCenter(iKstar);
-    graphSysErr->SetPoint(iKstar,xValue,ProtonXiDefault->GetBinContent(iKstar));
-    graphSysErr->SetPointError(iKstar, ProtonXiDefault->GetBinWidth(1)/2.,SysErrTotal);
+    graphSysErr->SetPoint(iKstar-1,xValue,ProtonXiDefault->GetBinContent(iKstar));
+    graphSysErr->SetPointError(iKstar-1, ProtonXiDefault->GetBinWidth(1)/2.,SysErrTotal);
     double relErr = SysErrTotal/ProtonXiDefault->GetBinContent(iKstar);
-    graphRelErr->SetPoint(iKstar,xValue,relErr);
+    graphRelErr->SetPoint(iKstar-1,xValue,relErr);
   }
   ProtonXiDefault->SetTitle("p-#Xi #oplus #bar{p}#bar{#Xi}");
   ProtonXiDefault->GetXaxis()->SetRangeUser(0, 0.5);
@@ -883,8 +892,8 @@ void TotalSystematics()
   //  TString FileDefault = "AnalysisResults.root";
   //  TString FileVariations[1] = {"AnalysisResults.root"};
   ProtonProtonSystematic(FileDefault,FileVariations);
-//  ProtonLambdaSystematic(FileDefault,FileVariations);
-//  LambdaLambdaSystematic(FileDefault,FileVariations);
-//  ProtonXiSystematic(FileDefault,FileVariations);
+  ProtonLambdaSystematic(FileDefault,FileVariations);
+  LambdaLambdaSystematic(FileDefault,FileVariations);
+  ProtonXiSystematic(FileDefault,FileVariations);
   return;
 }
